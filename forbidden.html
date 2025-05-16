@@ -2,41 +2,64 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Forbidden Zone</title>
+  <title>The Forbidden Portal</title>
   <style>
     body {
-      background: #000;
-      color: #0ff;
-      font-family: Consolas, monospace;
+      background-color: black;
+      color: white;
       text-align: center;
       padding-top: 100px;
+      font-family: Consolas, monospace;
     }
-    button {
-      display: block;
-      margin: 20px auto;
-      padding: 14px 28px;
-      font-size: 18px;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .forbidden-btn {
       background: red;
       color: white;
-      box-shadow: 0 0 20px red;
-      transition: 0.2s;
+      font-weight: bold;
+      padding: 16px 32px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 15px red;
     }
-    button:hover {
-      background: #cc0000;
-      box-shadow: 0 0 25px #ff0000;
+
+    .edits-btn {
+      background: transparent;
+      color: white;
+      font-weight: bold;
+      padding: 14px 28px;
+      font-size: 16px;
+      border: 2px solid white;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 20px white;
+    }
+
+    .edits-btn:hover {
+      background: white;
+      color: black;
     }
   </style>
 </head>
 <body>
 
-  <h1>💀 Welcome to the Forbidden Zone 💀</h1>
+  <div class="button-container">
+    <button class="forbidden-btn" onclick="location.href='chosen.html'">
+      🚨 Forbidden Website 🚨
+    </button>
 
-  <button onclick="window.location.href='chosen.html'">Forbidden Website</button>
-  <button onclick="window.open('https://docs.google.com/document/d/18jGt9PgRiOy1QmsAHSEt_btTxGY467PAbga5_KB7vig/edit?usp=sharing', '_blank')">Old Edits</button>
+    <button class="edits-btn" onclick="window.open('https://docs.google.com/document/d/18jGt9PgRiOy1QmsAHSEt_btTxGY467PAbga5_KB7vig/edit?usp=sharing', '_blank')">
+      📜 Old Edits
+    </button>
+  </div>
 
 </body>
 </html>
