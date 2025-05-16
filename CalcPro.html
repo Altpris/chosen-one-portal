@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>calc*</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .glass {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(20px);
+      border: 4px solid #4ade80;
+      box-shadow: 0 0 25px rgba(0, 255, 100, 0.2);
+      border-radius: 2rem;
+    }
+
+    .btn {
+      padding: 1.4rem 0;
+      border-radius: 9999px;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 5rem;
+      font-weight: 700;
+      font-size: 2rem;
+      color: white;
+      background-color: #1f2937; /* Tailwind gray-800 */
+      transition: all 0.15s ease-in-out;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+      transform: scale(1.03);
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .op {
+      background-color: #7c3aed;
+      border-color: #a78bfa;
+    }
+
+    .eval {
+      background-color: #10b981;
+      border-color: #6ee7b7;
+    }
+
+    .danger {
+      background-color: #ef4444;
+      border-color: #fca5a5;
+    }
+
+    .history-box {
+      max-height: 100%;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 1.125rem;
+      color: #d1d5db; /* Tailwind gray-300 */
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white min-h-screen flex items-center justify-center p-6">
+
+  <div class="flex gap-8 w-full max-w-7xl">
+    <!-- Calculator -->
+    <div class="glass w-full max-w-2xl p-8 flex-shrink-0">
+      <div id="display" class="text-right text-6xl font-mono bg-gray-900 text-white p-8 rounded-3xl mb-8 overflow-x-auto whitespace-nowrap border-4 border-white/20 shadow-inner min-h-[120px]">0</div>
+
+      <div class="grid grid-cols-4 gap-4 text-center select-none">
+        <button class="btn danger" onclick="clearDisplay()">C</button>
+        <button class="btn danger" onclick="delChar()">DEL</button>
+        <button class="btn op" onclick="appendChar('(')">(</button>
+        <button class="btn op" onclick="appendChar(')')">)</button>
+
+        <button class="btn" onclick="appendChar('7')">7</button>
+        <button class="btn" onclick="appendChar('8')">8</button>
+        <button class="btn" onclick="appendChar('9')">9</button>
+        <button class="btn op" onclick="appendChar('/')">÷</button>
+
+        <button class="btn" onclick="appendChar('4')">4</button>
+        <button class="btn" onclick="appendChar('5')">5</button>
+        <button class="btn" onclick="appendChar('6')">6</button>
+        <button class="btn op" onclick="appendChar('*')">×</button>
+
+        <button class="btn" onclick="appendChar('1')">1</button>
+        <button class="btn" onclick="appendChar('2')">2</button>
+        <button class="btn" onclick="appendChar('3')">3</button>
+        <button class="btn op" onclick="appendChar('-')">−</button>
+
+        <button class="btn" onclick="appendChar('0')">0</button>
+        <button class="btn" onclick="appendChar('.')">.</button>
+        <button class="btn op" onclick="appendChar('^')">^</button>
+        <button class="btn op" onclick="appendChar('+')">+</button>
+
+        <button class="btn eval col-span-4" onclick="calculate()">=</button>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="glass w-1/3 p-6 rounded-3xl shadow-2xl history-box">
+      <h2 class="text-2xl font-bold mb-4 border-b border-white/20 pb-2">History</h2>
+      <ul id="history" class="space-y-2"></ul>
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+    const history = document.getElementById('history');
+
+    function appendChar(char) {
+      if (display.innerText === '0') {
+        // Allow starting with numbers, dot, (, - or +
+        if ('0123456789.()-+'.includes(char)) {
+          display.innerText = char;
+        } else {
+          display.innerText += char;
+        }
+      } else {
+        display.innerText += char;
+      }
+    }
+
+    function clearDisplay() {
+      display.innerText = '0';
+    }
+
+    function delChar() {
+      const text = display.innerText;
+      display.innerText = text.length > 1 ? text.slice(0, -1) : '0';
+    }
+
+    function calculate() {
+      try {
+        // Replace custom operators with JS equivalents
+        const expr = display.innerText
+          .replace(/÷/g, '/')
+          .replace(/×/g, '*')
+          .replace(/\^/g, '**');
+
+        // Evaluate the expression safely
+        const result = eval(expr);
+
+        addToHistory(display.innerText, result);
+        display.innerText = result.toString();
+      } catch {
+        display.innerText = 'Error';
+      }
+    }
+
+    function addToHistory(expression, result) {
+      const li = document.createElement('li');
+      li.textContent = `${expression} = ${result}`;
+      history.prepend(li);
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', (e) => {
+      const allowed = '0123456789+-*/.^()';
+      if (allowed.includes(e.key)) {
+        appendChar(e.key);
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        delChar();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        calculate();
+      }
+    });
+  </script>
+</body>
+</html>
