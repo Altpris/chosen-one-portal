@@ -12,7 +12,7 @@
       padding: 20px;
     }
 
-    .forbidden-btn, .edits-btn, .calc-btn {
+    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn {
       display: block;
       width: fit-content;
       margin-bottom: 20px;
@@ -57,6 +57,21 @@
       background-color: #22c55e;
       box-shadow: 0 0 30px #4ade80;
     }
+
+    /* Blue glowing snake button */
+    .snake-btn {
+      background-color: #1e40af; /* blue */
+      color: white;
+      border: 3px solid #3b82f6;
+      box-shadow: 0 0 15px #3b82f6;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .snake-btn:hover {
+      background-color: #3b82f6;
+      box-shadow: 0 0 30px #60a5fa;
+      color: black;
+    }
   </style>
 </head>
 <body>
@@ -71,6 +86,10 @@
 
   <button class="calc-btn" onclick="window.open('CalcPro.html', '_blank')">
     Great calculator
+  </button>
+
+  <button class="snake-btn" onclick="window.open('Snakegame.html', '_blank')">
+    🐍 Play Snake Game *with ai against you or normally*
   </button>
 
 </body>
