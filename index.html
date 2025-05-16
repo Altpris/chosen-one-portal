@@ -2,20 +2,40 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Register & Login Portal</title>
+<title>Register & Login</title>
 <style>
-  body { font-family: Consolas, monospace; background: #000; color: #0ff; text-align: center; padding: 40px; }
-  input, button { padding: 10px; margin: 5px; font-size: 16px; }
-  .hidden { display: none; }
-  button { cursor: pointer; border-radius: 5px; border: none; background: #00ffff; color: #000; font-weight: bold; }
-  button:hover { background: #00cccc; }
+  body {
+    font-family: Consolas, monospace;
+    background: #000;
+    color: #0ff;
+    text-align: center;
+    padding: 40px;
+  }
+  input, button {
+    padding: 10px;
+    margin: 8px;
+    font-size: 16px;
+  }
+  button {
+    cursor: pointer;
+    border-radius: 6px;
+    border: none;
+    background: #00ffff;
+    color: #000;
+    font-weight: bold;
+  }
+  button:hover {
+    background: #00cccc;
+  }
+  .hidden {
+    display: none;
+  }
 </style>
 </head>
 <body>
 
 <h1 id="title">Register</h1>
 
-<!-- Register & Login Forms -->
 <div id="form-container">
   <input id="username" placeholder="Username" /><br />
   <input id="password" type="password" placeholder="Password" /><br />
@@ -24,11 +44,8 @@
   <p id="message"></p>
 </div>
 
-<!-- Portal Page (hidden by default) -->
-<div id="portal" class="hidden">
-  <h2>Welcome to the Portal!</h2>
-  <button id="chosenOneBtn">Chosen one website with fun links</button>
-  <!-- Later you can add more buttons here -->
+<div id="black-screen" class="hidden" style="background:#000; height: 80vh; display:flex; flex-direction: column; justify-content: center; align-items: center;">
+  <button id="forbidden-btn" style="font-size: 22px; padding: 20px 40px; background: red; color: white; box-shadow: 0 0 20px red;">Access the forbidden link</button>
 </div>
 
 <script>
@@ -37,8 +54,8 @@
   const messageP = document.getElementById('message');
   const title = document.getElementById('title');
   const formContainer = document.getElementById('form-container');
-  const portal = document.getElementById('portal');
-  const chosenOneBtn = document.getElementById('chosenOneBtn');
+  const blackScreen = document.getElementById('black-screen');
+  const forbiddenBtn = document.getElementById('forbidden-btn');
 
   let isRegister = true;
   let users = JSON.parse(localStorage.getItem('users') || '{}');
@@ -53,22 +70,21 @@
     messageP.style.color = isError ? 'red' : '#0ff';
   }
 
-  function showPortal() {
+  function showBlackScreen() {
     formContainer.classList.add('hidden');
-    portal.classList.remove('hidden');
+    blackScreen.classList.remove('hidden');
     title.textContent = `Welcome, ${loggedInUser}!`;
   }
 
   function showForm() {
     formContainer.classList.remove('hidden');
-    portal.classList.add('hidden');
+    blackScreen.classList.add('hidden');
     title.textContent = isRegister ? 'Register' : 'Login';
     showMessage('');
   }
 
   if (loggedInUser) {
-    // If user already logged in, show portal directly
-    showPortal();
+    showBlackScreen();
   } else {
     showForm();
   }
@@ -100,7 +116,7 @@
       if (users[username] && users[username] === password) {
         loggedInUser = username;
         localStorage.setItem('loggedInUser', username);
-        showPortal();
+        showBlackScreen();
       } else {
         showMessage('Invalid username or password', true);
       }
@@ -116,8 +132,8 @@
     document.getElementById('password').value = '';
   });
 
-  chosenOneBtn.addEventListener('click', () => {
-    // Replace this URL with your actual “chosen one” website link
+  forbiddenBtn.addEventListener('click', () => {
+    // Replace with your actual forbidden link URL
     window.location.href = 'https://docs.google.com/document/d/17V0c42kK7rWt0fQr4QscPvdpojCMGOrtaEppNhSznmE/edit?usp=sharing';
   });
 </script>
