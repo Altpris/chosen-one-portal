@@ -27,8 +27,8 @@
   button:hover {
     background: #00cccc;
   }
-  .hidden {
-    display: none;
+  #loginInputs {
+    margin-bottom: 12px;
   }
 </style>
 </head>
@@ -37,29 +37,30 @@
 <h1 id="title">Register</h1>
 
 <div id="form-container">
-  <input id="username" placeholder="Username" /><br />
-  <input id="password" type="password" placeholder="Password" /><br />
-  <button id="submit-btn">Register</button><br />
-  <button id="toggle-btn">Switch to Login</button>
+  <div id="registerInputs">
+    <input id="regUsername" placeholder="Username" /><br />
+    <input id="regPassword" type="password" placeholder="Password" /><br />
+  </div>
+  <div id="loginInputs" style="display:none;">
+    <input id="loginUsername" placeholder="Username" /><br />
+    <input id="loginPassword" type="password" placeholder="Password" /><br />
+  </div>
+  <button id="mainBtn">Register</button><br />
+  <button id="switchBtn">Switch to Login</button>
   <p id="message"></p>
 </div>
 
-<div id="black-screen" class="hidden" style="background:#000; height: 80vh; display:flex; flex-direction: column; justify-content: center; align-items: center;">
-  <button id="forbidden-btn" style="font-size: 22px; padding: 20px 40px; background: red; color: white; box-shadow: 0 0 20px red;">Access the forbidden link</button>
-</div>
-
 <script>
-  const submitBtn = document.getElementById('submit-btn');
-  const toggleBtn = document.getElementById('toggle-btn');
-  const messageP = document.getElementById('message');
+  const registerInputs = document.getElementById('registerInputs');
+  const loginInputs = document.getElementById('loginInputs');
+  const mainBtn = document.getElementById('mainBtn');
+  const switchBtn = document.getElementById('switchBtn');
   const title = document.getElementById('title');
-  const formContainer = document.getElementById('form-container');
-  const blackScreen = document.getElementById('black-screen');
-  const forbiddenBtn = document.getElementById('forbidden-btn');
+  const messageP = document.getElementById('message');
 
-  let isRegister = true;
   let users = JSON.parse(localStorage.getItem('users') || '{}');
-  let loggedInUser = localStorage.getItem('loggedInUser');
+  let isRegister = true;
+  let forbiddenMode = false;  // When true, login inputs hidden and button renamed
 
   function saveUsers() {
     localStorage.setItem('users', JSON.stringify(users));
@@ -70,71 +71,95 @@
     messageP.style.color = isError ? 'red' : '#0ff';
   }
 
-  function showBlackScreen() {
-    formContainer.classList.add('hidden');
-    blackScreen.classList.remove('hidden');
-    title.textContent = `Welcome, ${loggedInUser}!`;
+  function clearInputs() {
+    document.getElementById('regUsername').value = '';
+    document.getElementById('regPassword').value = '';
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
   }
 
-  function showForm() {
-    formContainer.classList.remove('hidden');
-    blackScreen.classList.add('hidden');
-    title.textContent = isRegister ? 'Register' : 'Login';
+  function showRegister() {
+    title.textContent = 'Register';
+    registerInputs.style.display = 'block';
+    loginInputs.style.display = 'none';
+    mainBtn.textContent = 'Register';
+    switchBtn.textContent = 'Switch to Login';
+    forbiddenMode = false;
+    isRegister = true;
     showMessage('');
+    clearInputs();
   }
 
-  if (loggedInUser) {
-    showBlackScreen();
-  } else {
-    showForm();
-  }
-
-  submitBtn.addEventListener('click', () => {
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
-
-    if (!username || !password) {
-      showMessage('Username and password cannot be empty', true);
-      return;
+  function showLogin() {
+    title.textContent = 'Login';
+    if (forbiddenMode) {
+      registerInputs.style.display = 'none';
+      loginInputs.style.display = 'none';
+      mainBtn.textContent = 'Open the forbidden mohab link';
+    } else {
+      registerInputs.style.display = 'none';
+      loginInputs.style.display = 'block';
+      mainBtn.textContent = 'Login';
     }
+    switchBtn.textContent = 'Switch to Register';
+    isRegister = false;
+    showMessage('');
+    clearInputs();
+  }
 
+  // Start with Register page
+  showRegister();
+
+  mainBtn.addEventListener('click', () => {
     if (isRegister) {
+      // Register logic
+      const username = document.getElementById('regUsername').value.trim();
+      const password = document.getElementById('regPassword').value;
+      if (!username || !password) {
+        showMessage('Please enter username and password', true);
+        return;
+      }
       if (users[username]) {
         showMessage('Username already exists', true);
       } else {
         users[username] = password;
         saveUsers();
-        showMessage('Registered successfully! Please login now.');
-        isRegister = false;
-        title.textContent = 'Login';
-        submitBtn.textContent = 'Login';
-        toggleBtn.textContent = 'Switch to Register';
-        document.getElementById('username').value = '';
-        document.getElementById('password').value = '';
+        showMessage('Registered! Now go to login.');
+        forbiddenMode = true;  // Next login page hides inputs & changes button
+        showLogin();
       }
     } else {
-      if (users[username] && users[username] === password) {
-        loggedInUser = username;
-        localStorage.setItem('loggedInUser', username);
-        // <-- Instead of taking you to website, show black screen page with button
-        showBlackScreen();
+      // Login page
+      if (forbiddenMode) {
+        // Forbidden mode: hide inputs and open forbidden link
+        window.open('https://docs.google.com/document/d/17V0c42kK7rWt0fQr4QscPvdpojCMGOrtaEppNhSznmE/edit?usp=sharing', '_blank');
+        forbiddenMode = false; // Reset forbidden mode next time
+        showLogin(); // Reset page to normal login after opening link
       } else {
-        showMessage('Invalid username or password', true);
+        // Normal login check
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        if (!username || !password) {
+          showMessage('Please enter username and password', true);
+          return;
+        }
+        if (users[username] && users[username] === password) {
+          showMessage('Logged in successfully!', false);
+          clearInputs();
+        } else {
+          showMessage('Invalid username or password', true);
+        }
       }
     }
   });
 
-  toggleBtn.addEventListener('click', () => {
-    isRegister = !isRegister;
-    showForm();
-    submitBtn.textContent = isRegister ? 'Register' : 'Login';
-    toggleBtn.textContent = isRegister ? 'Switch to Login' : 'Switch to Register';
-    document.getElementById('username').value = '';
-    document.getElementById('password').value = '';
-  });
-
-  forbiddenBtn.addEventListener('click', () => {
-    window.location.href = 'https://docs.google.com/document/d/17V0c42kK7rWt0fQr4QscPvdpojCMGOrtaEppNhSznmE/edit?usp=sharing';
+  switchBtn.addEventListener('click', () => {
+    if (isRegister) {
+      forbiddenMode = false;
+      showLogin();
+    } else {
+      showRegister();
+    }
   });
 </script>
 
