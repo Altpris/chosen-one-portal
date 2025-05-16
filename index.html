@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Register/Login</title>
+<style>
+  body {
+    font-family: Consolas, monospace;
+    background: #111;
+    color: #0ff;
+    text-align: center;
+    padding: 20px;
+  }
+  input, button {
+    font-size: 16px;
+    margin: 8px;
+    padding: 8px;
+    border-radius: 6px;
+    border: none;
+  }
+  button {
+    background: #00ffff;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #0cc;
+  }
+</style>
+</head>
+<body>
+
+<h1 id="title">Login</h1>
+<input id="username" placeholder="Username" autocomplete="off" />
+<input id="password" type="password" placeholder="Password" autocomplete="off" /><br/>
+<button id="loginBtn">Login</button><br/>
+<a href="#" id="switchToRegister" style="color:#0ff;">Switch to Register</a>
+
+<script>
+  const loginBtn = document.getElementById('loginBtn');
+  const switchToRegister = document.getElementById('switchToRegister');
+  const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
+  const title = document.getElementById('title');
+
+  let isRegister = false;
+
+  // simple users store in localStorage (username: password)
+  let users = JSON.parse(localStorage.getItem('users') || '{}');
+
+  switchToRegister.addEventListener('click', e => {
+    e.preventDefault();
+    isRegister = !isRegister;
+    if (isRegister) {
+      title.textContent = 'Register';
+      loginBtn.textContent = 'Register';
+      switchToRegister.textContent = 'Switch to Login';
+    } else {
+      title.textContent = 'Login';
+      loginBtn.textContent = 'Login';
+      switchToRegister.textContent = 'Switch to Register';
+    }
+    usernameInput.value = '';
+    passwordInput.value = '';
+  });
+
+  loginBtn.addEventListener('click', () => {
+    const user = usernameInput.value.trim();
+    const pass = passwordInput.value.trim();
+    if (!user || !pass) {
+      alert('Enter username & password');
+      return;
+    }
+
+    if (isRegister) {
+      if (users[user]) {
+        alert('User exists! Switch to login.');
+        return;
+      }
+      users[user] = pass;
+      localStorage.setItem('users', JSON.stringify(users));
+      alert('Registered! Now login.');
+      switchToRegister.click(); // Switch to login
+    } else {
+      if (users[user] === pass) {
+        // Successful login: redirect to forbidden page
+        localStorage.setItem('loggedInUser', user);
+        window.location.href = 'forbidden.html';
+      } else {
+        alert('Wrong username or password');
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

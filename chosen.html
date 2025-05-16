@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>You Are The Chosen One</title>
+<style>
+  body {
+    font-family: Consolas, monospace;
+    background: #111;
+    color: #0ff;
+    text-align: center;
+    padding: 20px;
+  }
+  .symbols {
+    font-size: 40px;
+    animation: spin 8s linear infinite, colorChange 6s ease-in-out infinite alternate;
+    margin: 20px 0;
+  }
+  img {
+    width: 200px;
+    border: 4px solid #00ffff;
+    border-radius: 20px;
+    box-shadow: 0 0 30px cyan;
+    animation: pulse 2s infinite ease-in-out;
+  }
+  @keyframes spin {  
+    0% {transform: rotate(0deg);}  
+    100% {transform: rotate(360deg);} 
+  }
+  @keyframes pulse {  
+    0% {transform: scale(1);}  
+    50% {transform: scale(1.04);}  
+    100% {transform: scale(1);} 
+  }
+  @keyframes colorChange {  
+    0% {color: #00f;}  
+    100% {color: #ff6600;} 
+  }
+  #accessLink {
+    background: red;
+    color: white;
+    font-weight: bold;
+    padding: 14px 28px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 0 15px red;
+    margin-top: 30px;
+    font-size: 18px;
+  }
+  #accessLink:hover {
+    background: #cc0000;
+  }
+  #logoutBtn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: #0ff;
+    color: #000;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 0 10px #0ff;
+  }
+  #logoutBtn:hover {
+    background: #0cc;
+  }
+</style>
+</head>
+<body>
+
+<h1>You are the chosen one</h1>
+<div class="symbols">Enter at your own risk</div>
+<img src="https://thumbs.dreamstime.com/b/emoticon-sunglasses-22756566.jpg" alt="Emoticon Sunglasses" />
+<div style="font-style: italic; font-size: 20px; margin-top: 15px; color: lime;">
+  You should really enter :D
+</div>
+
+<button id="accessLink">🚨 Click to access my Link 🚨</button><br/>
+<button id="logoutBtn">Logout</button>
+
+<script>
+  // Open the forbidden link
+  document.getElementById('accessLink').addEventListener('click', () => {
+    window.open('https://docs.google.com/document/d/17V0c42kK7rWt0fQr4QscPvdpojCMGOrtaEppNhSznmE/edit?usp=sharing', '_blank');
+  });
+
+  // Logout clears login and redirects to login page
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('loggedInUser');
+    window.location.href = 'index.html';
+  });
+</script>
+
+</body>
+</html>
