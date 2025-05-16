@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Snake Game</title>
+<style>
+  body {
+    margin: 0;
+    background: #111;
+    color: #eee;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100vh;
+    user-select: none;
+  }
+  h1 {
+    margin: 20px 0 10px;
+  }
+  #game-container {
+    position: relative;
+    background: #222;
+    border: 2px solid #0f0;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 400px;
+    height: 400px;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+  }
+  #controls {
+    margin-top: 15px;
+  }
+  select, button {
+    font-size: 16px;
+    padding: 6px 12px;
+    margin-right: 10px;
+    border-radius: 5px;
+    border: 1px solid #0f0;
+    background: #111;
+    color: #0f0;
+    cursor: pointer;
+  }
+  select:disabled, button:disabled {
+    color: #444;
+    border-color: #444;
+    cursor: default;
+  }
+  #status {
+    margin-top: 10px;
+    min-height: 18px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Snake Game</h1>
+
+<div id="game-container">
+  <canvas id="game"></canvas>
+</div>
+
+<div id="controls">
+  <select id="mode-select" title="Choose Game Mode">
+    <option value="" disabled selected>Select Mode</option>
+    <option value="normal">Normal</option>
+    <option value="fight">Fight (vs AI)</option>
+  </select>
+
+  <select id="difficulty-select" disabled title="Choose Difficulty">
+    <option value="" disabled selected>Select Difficulty</option>
+    <option value="easy">Easy (Slow, apples away from borders)</option>
+    <option value="medium">Medium (Average speed)</option>
+    <option value="hard">Hard (Fast)</option>
+    <option value="impossible">Impossible (AI only)</option>
+  </select>
+
+  <button id="start-btn" disabled>Start</button>
+  <button id="restart-btn" style="display:none;">Restart</button>
+</div>
+
+<div id="status"></div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+
+  const modeSelect = document.getElementById('mode-select');
+  const difficultySelect = document.getElementById('difficulty-select');
+  const startBtn = document.getElementById('start-btn');
+  const restartBtn = document.getElementById('restart-btn');
+  const statusDiv = document.getElementById('status');
+
+  const CELL_SIZE = 20;
+  const ROWS = 20;
+  const COLS = 20;
+  canvas.width = COLS * CELL_SIZE;
+  canvas.height = ROWS * CELL_SIZE;
+
+  let playerSnake = [];
+  let aiSnake = [];
+  let playerDir = {x:1, y:0};
+  let playerNextDir = {x:1, y:0};
+  let aiDir = {x:-1, y:0};
+  let apple = null;
+  let mode = null;
+  let difficulty = null;
+  let speed = 200;
+  let gameRunning = false;
+  let gameOver = false;
+  let gameLoopId = null;
+
+  function posEq(a,b) { return a.x === b.x && a.y === b.y; }
+
+  function spawnApple() {
+    let pos;
+    let attempts = 0;
+    while (true) {
+      attempts++;
+      if (attempts > 1000) break;
+      if (difficulty === 'easy') {
+        pos = {
+          x: Math.floor(Math.random() * (COLS-2)) + 1,
+          y: Math.floor(Math.random() * (ROWS-2)) + 1
+        };
+      } else {
+        pos = {
+          x: Math.floor(Math.random() * COLS),
+          y: Math.floor(Math.random() * ROWS)
+        };
+      }
+      if (playerSnake.some(s => posEq(s, pos))) continue;
+      if (mode === 'fight' && aiSnake.some(s => posEq(s, pos))) continue;
+      if (apple && posEq(apple, pos)) continue;
+      break;
+    }
+    return pos;
+  }
+
+  function resetGame() {
+    playerSnake = [{x:5, y:10}];
+    playerDir = {x:1, y:0};
+    playerNextDir = {x:1, y:0};
+    if (mode === 'fight') {
+      aiSnake = [{x:14, y:10}];
+      aiDir = {x:-1, y:0};
+    } else {
+      aiSnake = [];
+    }
+    apple = spawnApple();
+    gameOver = false;
+    statusDiv.textContent = '';
+  }
+
+  function drawCell(x, y, color, border=true) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x*CELL_SIZE, y*CELL_SIZE, CELL_SIZE, CELL_SIZE);
+    if(border) {
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x*CELL_SIZE, y*CELL_SIZE, CELL_SIZE, CELL_SIZE);
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (apple) drawCell(apple.x, apple.y, '#f00');
+    playerSnake.forEach((segment, i) => drawCell(segment.x, segment.y, i === 0 ? '#0f0' : '#0a0'));
+    if (mode === 'fight') {
+      aiSnake.forEach((segment, i) => drawCell(segment.x, segment.y, i === 0 ? '#00f' : '#0044aa'));
+    }
+  }
+
+  function setDirection(newDir) {
+    if (newDir.x === -playerDir.x && newDir.y === -playerDir.y) return; 
+    playerNextDir = newDir;
+  }
+
+  // Checks if a position matches any segment except the head (index 0)
+  function hitsTail(snake, pos) {
+    return snake.slice(1).some(segment => posEq(segment, pos));
+  }
+
+  // Moves a snake by dir; returns false if collides (dies)
+  function moveSnake(snake, dir, otherSnake=[]) {
+    const newHead = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+
+    if (newHead.x < 0 || newHead.x >= COLS || newHead.y < 0 || newHead.y >= ROWS) {
+      return false;
+    }
+
+    if (posEq(newHead, snake[0])) {
+      return false;
+    }
+
+    if (hitsTail(snake, newHead)) {
+      return false;
+    }
+
+    if (otherSnake.some(s => posEq(s, newHead))) {
+      return false;
+    }
+
+    snake.unshift(newHead);
+    snake.pop();
+    return true;
+  }
+
+  function growSnake(snake) {
+    snake.push({...snake[snake.length -1]});
+  }
+
+  function checkApple(snake) {
+    if (posEq(snake[0], apple)) {
+      growSnake(snake);
+      apple = spawnApple();
+      return true;
+    }
+    return false;
+  }
+
+  function aiMove() {
+    if (gameOver) return;
+
+    let head = aiSnake[0];
+    let dx = apple.x - head.x;
+    let dy = apple.y - head.y;
+    let newDir = aiDir;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+      newDir = {x: dx > 0 ? 1 : -1, y:0};
+    } else if (dy !== 0) {
+      newDir = {x:0, y: dy > 0 ? 1 : -1};
+    }
+
+    if (newDir.x === -aiDir.x && newDir.y === -aiDir.y) newDir = aiDir;
+
+    let nextPos = {x: head.x + newDir.x, y: head.y + newDir.y};
+    const collision = nextPos.x < 0 || nextPos.x >= COLS || nextPos.y < 0 || nextPos.y >= ROWS
+      || hitsTail(aiSnake, nextPos)
+      || hitsTail(playerSnake, nextPos)
+      || playerSnake.some(s => posEq(s, nextPos));
+
+    if (collision) {
+      const options = [
+        {x:1,y:0}, {x:-1,y:0},
+        {x:0,y:1}, {x:0,y:-1}
+      ];
+      for (const opt of options) {
+        if (opt.x === -aiDir.x && opt.y === -aiDir.y) continue;
+        const pos = {x: head.x + opt.x, y: head.y + opt.y};
+        if (pos.x < 0 || pos.x >= COLS || pos.y < 0 || pos.y >= ROWS) continue;
+        if (hitsTail(aiSnake, pos)) continue;
+        if (hitsTail(playerSnake, pos)) continue;
+        if (playerSnake.some(s => posEq(s, pos))) continue;
+        newDir = opt;
+        break;
+      }
+    }
+    aiDir = newDir;
+  }
+
+  // Checks if either snake's head hit the other's tail, causing death
+  function checkTailCollisions() {
+    const playerHead = playerSnake[0];
+    const aiHead = aiSnake[0];
+
+    // Player hits AI tail?
+    if (aiSnake.length > 1 && hitsTail(aiSnake, playerHead)) {
+      gameOver = true;
+      statusDiv.textContent = 'Game Over! You hit AI\'s tail.';
+      endGame();
+      return true;
+    }
+    // AI hits player tail?
+    if (mode === 'fight' && playerSnake.length > 1 && hitsTail(playerSnake, aiHead)) {
+      gameOver = true;
+      statusDiv.textContent = 'Game Over! AI hit your tail.';
+      endGame();
+      return true;
+    }
+    return false;
+  }
+
+  function gameLoop() {
+  if (gameOver) return;
+
+  playerDir = playerNextDir;
+  const playerMoved = moveSnake(playerSnake, playerDir, mode === 'fight' ? aiSnake : []);
+  if (!playerMoved) {
+    gameOver = true;
+    statusDiv.textContent = 'Game Over! You hit a wall or yourself.';
+    endGame();
+    return;
+  }
+
+  if (mode === 'fight') {
+    aiMove();
+    const aiMoved = moveSnake(aiSnake, aiDir, playerSnake);
+    if (!aiMoved) {
+      gameOver = true;
+      statusDiv.textContent = 'Game Over! AI hit a wall or itself.';
+      endGame();
+      return;
+    }
+  }
+
+  if (checkApple(playerSnake)) {
+    // maybe increase score or speed later
+  }
+  if (mode === 'fight' && checkApple(aiSnake)) {
+    // AI ate apple, could handle scoring here
+  }
+
+  if (checkTailCollisions()) {
+    return; // gameOver handled inside checkTailCollisions
+  }
+
+  draw();
+
+  gameLoopId = setTimeout(gameLoop, speed);
+}
+
+function endGame() {
+  gameRunning = false;
+  startBtn.disabled = false;
+  restartBtn.style.display = 'inline-block';
+  modeSelect.disabled = false;
+  difficultySelect.disabled = false;
+  clearTimeout(gameLoopId);
+}
+
+startBtn.addEventListener('click', () => {
+  if (!mode || !difficulty) return;
+
+  speed = difficulty === 'easy' ? 300 :
+          difficulty === 'medium' ? 200 :
+          difficulty === 'hard' ? 100 :
+          50; // impossible or AI-only fastest speed
+
+  resetGame();
+
+  gameRunning = true;
+  startBtn.disabled = true;
+  restartBtn.style.display = 'none';
+  modeSelect.disabled = true;
+  difficultySelect.disabled = true;
+
+  gameLoop();
+});
+
+restartBtn.addEventListener('click', () => {
+  resetGame();
+  draw();
+  gameOver = false;
+  statusDiv.textContent = '';
+  restartBtn.style.display = 'none';
+  startBtn.disabled = false;
+  modeSelect.disabled = false;
+  difficultySelect.disabled = false;
+});
+
+modeSelect.addEventListener('change', () => {
+  mode = modeSelect.value;
+  difficultySelect.disabled = false;
+  difficultySelect.value = '';
+  startBtn.disabled = true;
+});
+
+difficultySelect.addEventListener('change', () => {
+  difficulty = difficultySelect.value;
+  startBtn.disabled = !(mode && difficulty);
+});
+
+// Keyboard controls
+window.addEventListener('keydown', e => {
+  if (!gameRunning) return;
+
+  switch(e.key) {
+    case 'ArrowUp':
+    case 'w':
+    case 'W':
+      setDirection({x:0, y:-1});
+      break;
+    case 'ArrowDown':
+    case 's':
+    case 'S':
+      setDirection({x:0, y:1});
+      break;
+    case 'ArrowLeft':
+    case 'a':
+    case 'A':
+      setDirection({x:-1, y:0});
+      break;
+    case 'ArrowRight':
+    case 'd':
+    case 'D':
+      setDirection({x:1, y:0});
+      break;
+  }
+});
+
+// Initial draw before game starts
+resetGame();
+draw();
+
+})();
+</script>
+
+</body>
+</html>
