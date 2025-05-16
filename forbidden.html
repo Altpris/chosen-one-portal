@@ -8,17 +8,11 @@
       background-color: black;
       color: white;
       font-family: Consolas, monospace;
-      margin: 40px;
-    }
-
-    .button-container {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 20px;
+      padding: 40px;
     }
 
     .forbidden-btn {
+      display: inline-block;
       background: red;
       color: white;
       font-weight: bold;
@@ -28,9 +22,11 @@
       border-radius: 10px;
       cursor: pointer;
       box-shadow: 0 0 15px red;
+      margin-bottom: 20px;
     }
 
     .edits-btn {
+      display: inline-block;
       background: transparent;
       color: white;
       font-weight: bold;
@@ -51,15 +47,13 @@
 </head>
 <body>
 
-  <div class="button-container">
-    <button class="forbidden-btn" onclick="location.href='chosen.html'">
-      🚨 Forbidden Website 🚨
-    </button>
+  <button class="forbidden-btn" onclick="location.href='chosen.html'">
+    🚨 Forbidden Website 🚨
+  </button><br>
 
-    <button class="edits-btn" onclick="window.open('https://docs.google.com/document/d/18jGt9PgRiOy1QmsAHSEt_btTxGY467PAbga5_KB7vig/edit?usp=sharing', '_blank')">
-      📜 Old Edits
-    </button>
-  </div>
+  <button class="edits-btn" onclick="window.open('https://docs.google.com/document/d/18jGt9PgRiOy1QmsAHSEt_btTxGY467PAbga5_KB7vig/edit?usp=sharing', '_blank')">
+    📜 Old Edits
+  </button>
 
 </body>
 </html>
