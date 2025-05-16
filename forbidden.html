@@ -8,34 +8,33 @@
       background-color: black;
       color: white;
       font-family: Consolas, monospace;
-      padding: 40px;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .forbidden-btn, .edits-btn {
+      display: block;
+      width: fit-content;
+      margin-bottom: 20px;
+      font-weight: bold;
+      padding: 14px 28px;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      border: none;
     }
 
     .forbidden-btn {
-      display: inline-block;
       background: red;
       color: white;
-      font-weight: bold;
-      padding: 14px 28px;
-      font-size: 18px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      box-shadow: 0 0 15px red;
-      margin-bottom: 20px;
+      box-shadow: 0 0 12px red;
     }
 
     .edits-btn {
-      display: inline-block;
       background: transparent;
       color: white;
-      font-weight: bold;
-      padding: 12px 26px;
-      font-size: 16px;
       border: 2px solid white;
-      border-radius: 10px;
-      cursor: pointer;
-      box-shadow: 0 0 12px white;
+      box-shadow: 0 0 10px white;
       transition: 0.3s;
     }
 
@@ -49,7 +48,7 @@
 
   <button class="forbidden-btn" onclick="location.href='chosen.html'">
     🚨 Forbidden Website 🚨
-  </button><br>
+  </button>
 
   <button class="edits-btn" onclick="window.open('https://docs.google.com/document/d/18jGt9PgRiOy1QmsAHSEt_btTxGY467PAbga5_KB7vig/edit?usp=sharing', '_blank')">
     📜 Old Edits
