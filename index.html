@@ -27,7 +27,7 @@
   button:hover {
     background: #00cccc;
   }
-  #loginInputs {
+  #loginInputs, #registerInputs {
     margin-bottom: 12px;
   }
 </style>
@@ -60,7 +60,7 @@
 
   let users = JSON.parse(localStorage.getItem('users') || '{}');
   let isRegister = true;
-  let forbiddenMode = false;  // When true, login inputs hidden and button renamed
+  let forbiddenMode = false; // only true after successful login
 
   function saveUsers() {
     localStorage.setItem('users', JSON.stringify(users));
@@ -93,6 +93,7 @@
   function showLogin() {
     title.textContent = 'Login';
     if (forbiddenMode) {
+      // After successful login: hide inputs and show special button
       registerInputs.style.display = 'none';
       loginInputs.style.display = 'none';
       mainBtn.textContent = 'Open the forbidden mohab link';
@@ -107,12 +108,12 @@
     clearInputs();
   }
 
-  // Start with Register page
+  // Start on Register page
   showRegister();
 
   mainBtn.addEventListener('click', () => {
     if (isRegister) {
-      // Register logic
+      // Register
       const username = document.getElementById('regUsername').value.trim();
       const password = document.getElementById('regPassword').value;
       if (!username || !password) {
@@ -124,19 +125,18 @@
       } else {
         users[username] = password;
         saveUsers();
-        showMessage('Registered! Now go to login.');
-        forbiddenMode = true;  // Next login page hides inputs & changes button
-        showLogin();
+        showMessage('Registered! Switch to login to proceed.');
+        clearInputs();
       }
     } else {
-      // Login page
+      // Login
       if (forbiddenMode) {
-        // Forbidden mode: hide inputs and open forbidden link
+        // Button is "Open the forbidden mohab link"
         window.open('https://docs.google.com/document/d/17V0c42kK7rWt0fQr4QscPvdpojCMGOrtaEppNhSznmE/edit?usp=sharing', '_blank');
-        forbiddenMode = false; // Reset forbidden mode next time
-        showLogin(); // Reset page to normal login after opening link
+        forbiddenMode = false; // reset forbiddenMode so next time login page is normal
+        showLogin();
       } else {
-        // Normal login check
+        // Normal login attempt
         const username = document.getElementById('loginUsername').value.trim();
         const password = document.getElementById('loginPassword').value;
         if (!username || !password) {
@@ -144,8 +144,9 @@
           return;
         }
         if (users[username] && users[username] === password) {
-          showMessage('Logged in successfully!', false);
-          clearInputs();
+          showMessage('Logged in successfully!');
+          forbiddenMode = true; // switch to forbiddenMode now
+          showLogin(); // reload login page with forbiddenMode UI
         } else {
           showMessage('Invalid username or password', true);
         }
@@ -154,8 +155,8 @@
   });
 
   switchBtn.addEventListener('click', () => {
+    forbiddenMode = false;
     if (isRegister) {
-      forbiddenMode = false;
       showLogin();
     } else {
       showRegister();
