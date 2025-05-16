@@ -1,45 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Forbidden Access</title>
-<style>
-  body {
-    background-color: black;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    font-family: Consolas, monospace;
-  }
-  button {
-    background: red;
-    color: white;
-    font-weight: bold;
-    font-size: 24px;
-    padding: 20px 40px;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 0 0 15px red;
-    transition: background 0.3s ease;
-  }
-  button:hover {
-    background: #cc0000;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Forbidden Zone</title>
+  <style>
+    body {
+      background: #000;
+      color: #0ff;
+      font-family: Consolas, monospace;
+      text-align: center;
+      padding-top: 100px;
+    }
+    button {
+      display: block;
+      margin: 20px auto;
+      padding: 14px 28px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: red;
+      color: white;
+      box-shadow: 0 0 20px red;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: #cc0000;
+      box-shadow: 0 0 25px #ff0000;
+    }
+  </style>
 </head>
 <body>
 
-<button id="forbiddenBtn">Forbidden Website</button>
+  <h1>💀 Welcome to the Forbidden Zone 💀</h1>
 
-<script>
-  document.getElementById('forbiddenBtn').addEventListener('click', () => {
-    // Go to chosen one page
-    window.location.href = 'chosen.html';
-  });
-</script>
+  <button onclick="window.location.href='chosen.html'">Forbidden Website</button>
+  <button onclick="window.open('https://docs.google.com/document/d/18jGt9PgRiOy1QmsAHSEt_btTxGY467PAbga5_KB7vig/edit?usp=sharing', '_blank')">Old Edits</button>
 
 </body>
 </html>
