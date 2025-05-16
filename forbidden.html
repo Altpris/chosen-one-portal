@@ -12,7 +12,7 @@
       padding: 20px;
     }
 
-    .forbidden-btn, .edits-btn {
+    .forbidden-btn, .edits-btn, .calc-btn {
       display: block;
       width: fit-content;
       margin-bottom: 20px;
@@ -22,6 +22,7 @@
       border-radius: 10px;
       cursor: pointer;
       border: none;
+      text-align: center;
     }
 
     .forbidden-btn {
@@ -42,6 +43,20 @@
       background: white;
       color: black;
     }
+
+    /* New green calc button */
+    .calc-btn {
+      background-color: #16a34a; /* green */
+      color: white;
+      border: 3px solid #22c55e;
+      box-shadow: 0 0 15px #22c55e;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .calc-btn:hover {
+      background-color: #22c55e;
+      box-shadow: 0 0 30px #4ade80;
+    }
   </style>
 </head>
 <body>
@@ -52,6 +67,10 @@
 
   <button class="edits-btn" onclick="window.open('https://docs.google.com/document/d/18jGt9PgRiOy1QmsAHSEt_btTxGY467PAbga5_KB7vig/edit?usp=sharing', '_blank')">
     📜 Old Edits
+  </button>
+
+  <button class="calc-btn" onclick="window.open('CalcPro.html', '_blank')">
+    calc
   </button>
 
 </body>
