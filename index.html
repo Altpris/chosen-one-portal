@@ -2,145 +2,158 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Register & Login</title>
+<title>Register/Login Portal</title>
 <style>
-  body { font-family: Arial, sans-serif; background: #111; color: #eee; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0;}
-  .container { background: #222; padding: 20px 30px; border-radius: 10px; width: 320px; box-shadow: 0 0 10px #0ff;}
-  h2 { text-align: center; margin-bottom: 20px; }
-  label { display: block; margin-top: 10px; }
-  input[type="text"], input[type="password"] { width: 100%; padding: 8px; margin-top: 5px; border-radius: 5px; border: none; }
-  button { margin-top: 20px; width: 100%; padding: 10px; background: #0ff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
-  button:hover { background: #0cc; }
-  #switchBtn { margin-top: 10px; background: transparent; color: #0ff; border: none; cursor: pointer; text-decoration: underline; }
-  #message { margin-top: 15px; height: 20px; text-align: center; }
-  #forbiddenBtn { margin-top: 20px; background: red; color: white; font-weight: bold; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #121212;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px;
+  }
+  input, button {
+    padding: 8px;
+    margin: 5px 0;
+    width: 200px;
+  }
+  button {
+    cursor: pointer;
+  }
+  #forbiddenPage {
+    text-align: center;
+  }
+  #forbiddenPage button {
+    background: red;
+    color: white;
+    font-weight: bold;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    box-shadow: 0 0 12px red;
+    transition: 0.3s;
+  }
+  #forbiddenPage button:hover {
+    background: darkred;
+    transform: scale(1.05);
+  }
+  #switchBtns button {
+    background: #333;
+    color: #eee;
+    border: none;
+    border-radius: 5px;
+    margin: 0 10px;
+    padding: 8px 14px;
+    font-weight: bold;
+  }
+  #switchBtns button:hover {
+    background: #555;
+  }
+  #message {
+    height: 20px;
+    margin-bottom: 10px;
+  }
 </style>
 </head>
 <body>
-  <div class="container" id="container">
-    <!-- Register Form -->
-    <div id="registerForm">
-      <h2>Register</h2>
-      <label for="regUsername">Username:</label>
-      <input type="text" id="regUsername" autocomplete="off" />
-      <label for="regPassword">Password:</label>
-      <input type="password" id="regPassword" />
-      <button id="registerBtn">Register</button>
-      <button id="switchToLoginBtn">Switch to Login</button>
-      <div id="registerMessage"></div>
-    </div>
 
-    <!-- Login Form -->
-    <div id="loginForm" style="display:none;">
-      <h2>Login</h2>
-      <label for="loginUsername">Username:</label>
-      <input type="text" id="loginUsername" autocomplete="off" />
-      <label for="loginPassword">Password:</label>
-      <input type="password" id="loginPassword" />
-      <button id="loginBtn">Login</button>
-      <button id="switchToRegisterBtn">Switch to Register</button>
-      <div id="loginMessage"></div>
-    </div>
+<div id="registerPage">
+  <h2>Register</h2>
+  <input type="text" id="regUsername" placeholder="Username" autocomplete="off" />
+  <input type="password" id="regPassword" placeholder="Password" autocomplete="off" />
+  <button id="registerBtn">Register</button>
+  <div id="registerMessage"></div>
+  <div id="switchBtns">
+    <button id="toLoginBtn">Switch to Login</button>
   </div>
+</div>
+
+<div id="loginPage" style="display:none;">
+  <h2>Login</h2>
+  <input type="text" id="loginUsername" placeholder="Username" autocomplete="off" />
+  <input type="password" id="loginPassword" placeholder="Password" autocomplete="off" />
+  <button id="loginBtn">Login</button>
+  <div id="loginMessage"></div>
+  <div id="switchBtns">
+    <button id="toRegisterBtn">Switch to Register</button>
+  </div>
+</div>
+
+<div id="forbiddenPage" style="display:none;">
+  <h2>Welcome, Chosen One</h2>
+  <button id="openForbiddenBtn">Open the forbidden mohab link</button>
+</div>
 
 <script>
-  // Users stored in localStorage
-  let users = JSON.parse(localStorage.getItem('users') || '{}');
+  // Simple persistent storage of users
+  const usersKey = 'mohab_users';
+  let users = JSON.parse(localStorage.getItem(usersKey)) || {};
 
-  const registerForm = document.getElementById('registerForm');
-  const loginForm = document.getElementById('loginForm');
+  // Elements
+  const registerPage = document.getElementById('registerPage');
+  const loginPage = document.getElementById('loginPage');
+  const forbiddenPage = document.getElementById('forbiddenPage');
 
   const regUsername = document.getElementById('regUsername');
   const regPassword = document.getElementById('regPassword');
   const registerBtn = document.getElementById('registerBtn');
-  const switchToLoginBtn = document.getElementById('switchToLoginBtn');
   const registerMessage = document.getElementById('registerMessage');
+  const toLoginBtn = document.getElementById('toLoginBtn');
 
   const loginUsername = document.getElementById('loginUsername');
   const loginPassword = document.getElementById('loginPassword');
   const loginBtn = document.getElementById('loginBtn');
-  const switchToRegisterBtn = document.getElementById('switchToRegisterBtn');
   const loginMessage = document.getElementById('loginMessage');
+  const toRegisterBtn = document.getElementById('toRegisterBtn');
 
-  // Show register form, hide login
-  function showRegister() {
-    registerForm.style.display = 'block';
-    loginForm.style.display = 'none';
-    clearRegisterFields();
-    clearRegisterMessage();
+  const openForbiddenBtn = document.getElementById('openForbiddenBtn');
+
+  function saveUsers() {
+    localStorage.setItem(usersKey, JSON.stringify(users));
   }
 
-  // Show login form, hide register
-  function showLogin() {
-    registerForm.style.display = 'none';
-    loginForm.style.display = 'block';
-    clearLoginFields();
-    clearLoginMessage();
-    resetLoginForm(); // Make sure login page is normal on show
-  }
-
-  // Clear inputs & messages
   function clearRegisterFields() {
     regUsername.value = '';
     regPassword.value = '';
-  }
-  function clearRegisterMessage() {
     registerMessage.textContent = '';
   }
+
   function clearLoginFields() {
     loginUsername.value = '';
     loginPassword.value = '';
-  }
-  function clearLoginMessage() {
     loginMessage.textContent = '';
   }
 
-  // Save users to localStorage
-  function saveUsers() {
-    localStorage.setItem('users', JSON.stringify(users));
+  function showRegister() {
+    registerPage.style.display = 'block';
+    loginPage.style.display = 'none';
+    forbiddenPage.style.display = 'none';
+    clearRegisterFields();
+    clearLoginFields();
   }
 
-  // Reset login form to normal (show inputs + buttons)
-  function resetLoginForm() {
-    // Restore labels and inputs
-    loginUsername.style.display = 'block';
-    loginPassword.style.display = 'block';
-    loginUsername.previousElementSibling.style.display = 'block'; // label
-    loginPassword.previousElementSibling.style.display = 'block'; // label
+  function showLogin() {
+    registerPage.style.display = 'none';
+    loginPage.style.display = 'block';
+    forbiddenPage.style.display = 'none';
+    clearLoginFields();
+    clearRegisterFields();
 
-    // Show buttons
+    // Make sure the login page shows full normal login form (including switch to register button)
+    toRegisterBtn.style.display = 'inline-block';
+    loginUsername.style.display = 'inline-block';
+    loginPassword.style.display = 'inline-block';
     loginBtn.style.display = 'inline-block';
-    switchToRegisterBtn.style.display = 'inline-block';
-
-    // Change login button text
-    loginBtn.textContent = 'Login';
-
-    // Enable buttons
-    loginBtn.disabled = false;
-    switchToRegisterBtn.disabled = false;
-
-    clearLoginMessage();
   }
 
-  // After successful login, change login form to forbidden mode
-  function setForbiddenMode() {
-    // Hide username/password inputs and labels
-    loginUsername.style.display = 'none';
-    loginPassword.style.display = 'none';
-    loginUsername.previousElementSibling.style.display = 'none'; // label
-    loginPassword.previousElementSibling.style.display = 'none'; // label
-
-    // Hide switch to register button
-    switchToRegisterBtn.style.display = 'none';
-
-    // Change login button to forbidden button
-    loginBtn.textContent = 'Open the forbidden mohab link';
-    loginBtn.disabled = false;
-
-    clearLoginMessage();
+  function showForbidden() {
+    registerPage.style.display = 'none';
+    loginPage.style.display = 'none';
+    forbiddenPage.style.display = 'block';
   }
 
-  // Event Listeners
+  // Register
   registerBtn.addEventListener('click', () => {
     const username = regUsername.value.trim();
     const password = regPassword.value;
@@ -160,48 +173,49 @@
     registerMessage.textContent = 'Registered successfully! Redirecting to login...';
     clearRegisterFields();
 
-    // After short delay, switch to login page
-    setTimeout(() => {
-      showLogin();
-    }, 1200);
-  });
-
-  switchToLoginBtn.addEventListener('click', () => {
+    // Immediately switch to login page (like pressing "Switch to Login")
     showLogin();
   });
 
-  switchToRegisterBtn.addEventListener('click', () => {
-    showRegister();
-  });
+  toLoginBtn.addEventListener('click', showLogin);
+  toRegisterBtn.addEventListener('click', showRegister);
 
+  // Login
   loginBtn.addEventListener('click', () => {
-    // If forbidden mode active (button says "Open the forbidden mohab link"), open link and reset
-    if (loginBtn.textContent === 'Open the forbidden mohab link') {
-      window.open('https://docs.google.com/document/d/17V0c42kK7rWt0fQr4QscPvdpojCMGOrtaEppNhSznmE/edit?usp=sharing', '_blank');
-      resetLoginForm();
-      clearLoginFields();
-      return;
-    }
-
-    // Normal login process
     const username = loginUsername.value.trim();
     const password = loginPassword.value;
     if (!username || !password) {
       loginMessage.style.color = 'red';
-      loginMessage.textContent = 'Please enter username and password';
+      loginMessage.textContent = 'Enter username and password';
       return;
     }
-    if (users[username] && users[username] === password) {
-      loginMessage.style.color = 'lime';
-      loginMessage.textContent = 'Login successful!';
-      setForbiddenMode();
-    } else {
+    if (!users[username] || users[username] !== password) {
       loginMessage.style.color = 'red';
-      loginMessage.textContent = 'Invalid username or password';
+      loginMessage.textContent = 'Wrong username or password';
+      return;
     }
+
+    // Successful login
+    loginMessage.textContent = '';
+    clearLoginFields();
+
+    // Hide login inputs and switch button
+    loginUsername.style.display = 'none';
+    loginPassword.style.display = 'none';
+    loginBtn.style.display = 'none';
+    toRegisterBtn.style.display = 'none';
+
+    // Show forbiddenPage with button only (no switch to register)
+    showForbidden();
   });
 
-  // Start on register page
+  openForbiddenBtn.addEventListener('click', () => {
+    window.open('https://docs.google.com/document/d/17V0c42kK7rWt0fQr4QscPvdpojCMGOrtaEppNhSznmE/edit?usp=sharing', '_blank');
+    // Reset login page to normal for next time
+    showLogin();
+  });
+
+  // Start with register page as you wanted
   showRegister();
 </script>
 </body>
