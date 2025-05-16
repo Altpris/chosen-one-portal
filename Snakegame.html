@@ -38,7 +38,7 @@
   #controls {
     margin-top: 15px;
   }
-  select, button {
+  select, button, input {
     font-size: 16px;
     padding: 6px 12px;
     margin-right: 10px;
@@ -48,7 +48,7 @@
     color: #0f0;
     cursor: pointer;
   }
-  select:disabled, button:disabled {
+  select:disabled, button:disabled, input:disabled {
     color: #444;
     border-color: #444;
     cursor: default;
@@ -56,6 +56,18 @@
   #status {
     margin-top: 10px;
     min-height: 18px;
+  }
+  #scoreboard {
+    margin-top: 10px;
+    font-size: 18px;
+    color: #0f0;
+    min-height: 24px;
+  }
+  #timer {
+    margin-top: 10px;
+    font-size: 20px;
+    color: #0f0;
+    min-height: 24px;
   }
 </style>
 </head>
@@ -66,6 +78,9 @@
 <div id="game-container">
   <canvas id="game"></canvas>
 </div>
+
+<div id="scoreboard">Score: 0</div>
+<div id="timer"></div>
 
 <div id="controls">
   <select id="mode-select" title="Choose Game Mode">
@@ -82,6 +97,8 @@
     <option value="impossible">Impossible (AI only)</option>
   </select>
 
+  <input id="countdown-input" type="number" min="5" max="300" value="30" style="width:70px;" disabled title="Set Countdown (seconds)" />
+
   <button id="start-btn" disabled>Start</button>
   <button id="restart-btn" style="display:none;">Restart</button>
 </div>
@@ -95,9 +112,12 @@
 
   const modeSelect = document.getElementById('mode-select');
   const difficultySelect = document.getElementById('difficulty-select');
+  const countdownInput = document.getElementById('countdown-input');
   const startBtn = document.getElementById('start-btn');
   const restartBtn = document.getElementById('restart-btn');
   const statusDiv = document.getElementById('status');
+  const scoreboard = document.getElementById('scoreboard');
+  const timerDiv = document.getElementById('timer');
 
   const CELL_SIZE = 20;
   const ROWS = 20;
@@ -116,7 +136,18 @@
   let speed = 200;
   let gameRunning = false;
   let gameOver = false;
-  let gameLoopId = null;
+
+  // Scores
+  let playerScore = 0;
+  let aiScore = 0;
+
+  // Countdown Timer
+  let countdown = 30;
+  let countdownIntervalId = null;
+
+  // Crash states
+  let playerCrashed = false;
+  let aiCrashed = false;
 
   function posEq(a,b) { return a.x === b.x && a.y === b.y; }
 
@@ -157,7 +188,22 @@
     }
     apple = spawnApple();
     gameOver = false;
+    playerCrashed = false;
+    aiCrashed = false;
     statusDiv.textContent = '';
+    playerScore = 0;
+    aiScore = 0;
+    updateScoreboard();
+    countdown = parseInt(countdownInput.value) || 30;
+    updateTimerDisplay();
+  }
+
+  function updateScoreboard() {
+    if (mode === 'fight') {
+      scoreboard.textContent = `Player Score: ${playerScore} | AI Score: ${aiScore}`;
+    } else {
+      scoreboard.textContent = `Score: ${playerScore}`;
+    }
   }
 
   function drawCell(x, y, color, border=true) {
@@ -184,12 +230,10 @@
     playerNextDir = newDir;
   }
 
-  // Checks if a position matches any segment except the head (index 0)
   function hitsTail(snake, pos) {
     return snake.slice(1).some(segment => posEq(segment, pos));
   }
 
-  // Moves a snake by dir; returns false if collides (dies)
   function moveSnake(snake, dir, otherSnake=[]) {
     const newHead = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
 
@@ -218,17 +262,23 @@
     snake.push({...snake[snake.length -1]});
   }
 
-  function checkApple(snake) {
+  function checkApple(snake, isPlayer) {
     if (posEq(snake[0], apple)) {
       growSnake(snake);
       apple = spawnApple();
+      if (isPlayer) {
+        playerScore++;
+      } else {
+        aiScore++;
+      }
+      updateScoreboard();
       return true;
     }
     return false;
   }
 
   function aiMove() {
-    if (gameOver) return;
+    if (aiCrashed || gameOver) return;
 
     let head = aiSnake[0];
     let dx = apple.x - head.x;
@@ -241,179 +291,171 @@
       newDir = {x:0, y: dy > 0 ? 1 : -1};
     }
 
-    if (newDir.x === -aiDir.x && newDir.y === -aiDir.y) newDir = aiDir;
+    // Try to move in newDir, if blocked, try alternative moves
+    let moved = moveSnake(aiSnake, newDir, playerSnake);
+    if (!moved) {
+      // Try perpendicular directions
+      const options = [];
+      if (newDir.x === 0) {
+        options.push({x:1, y:0}, {x:-1, y:0});
+      } else {
+        options.push({x:0, y:1}, {x:0, y:-1});
+      }
+      for (const dirTry of options) {
+        if (moveSnake(aiSnake, dirTry, playerSnake)) {
+          aiDir = dirTry;
+          return;
+        }
+      }
+      // Can't move anywhere => crash
+      aiCrashed = true;
+      statusDiv.textContent = 'AI crashed! You keep moving!';
+    } else {
+      aiDir = newDir;
+    }
+  }
+  function update() {
+    if (gameOver) return;
 
-    let nextPos = {x: head.x + newDir.x, y: head.y + newDir.y};
-    const collision = nextPos.x < 0 || nextPos.x >= COLS || nextPos.y < 0 || nextPos.y >= ROWS
-      || hitsTail(aiSnake, nextPos)
-      || hitsTail(playerSnake, nextPos)
-      || playerSnake.some(s => posEq(s, nextPos));
+    // Update player direction
+    playerDir = playerNextDir;
 
-    if (collision) {
-      const options = [
-        {x:1,y:0}, {x:-1,y:0},
-        {x:0,y:1}, {x:0,y:-1}
-      ];
-      for (const opt of options) {
-        if (opt.x === -aiDir.x && opt.y === -aiDir.y) continue;
-        const pos = {x: head.x + opt.x, y: head.y + opt.y};
-        if (pos.x < 0 || pos.x >= COLS || pos.y < 0 || pos.y >= ROWS) continue;
-        if (hitsTail(aiSnake, pos)) continue;
-        if (hitsTail(playerSnake, pos)) continue;
-        if (playerSnake.some(s => posEq(s, pos))) continue;
-        newDir = opt;
-        break;
+    // Move player snake
+    if (!playerCrashed) {
+      const moved = moveSnake(playerSnake, playerDir, mode === 'fight' ? aiSnake : []);
+      if (!moved) {
+        playerCrashed = true;
+        statusDiv.textContent = 'You crashed!';
+      } else {
+        checkApple(playerSnake, true);
       }
     }
-    aiDir = newDir;
-  }
 
-  // Checks if either snake's head hit the other's tail, causing death
-  function checkTailCollisions() {
-    const playerHead = playerSnake[0];
-    const aiHead = aiSnake[0];
-
-    // Player hits AI tail?
-    if (aiSnake.length > 1 && hitsTail(aiSnake, playerHead)) {
-      gameOver = true;
-      statusDiv.textContent = 'Game Over! You hit AI\'s tail.';
-      endGame();
-      return true;
+    // Move AI snake if in fight mode
+    if (mode === 'fight' && !aiCrashed) {
+      aiMove();
+      checkApple(aiSnake, false);
     }
-    // AI hits player tail?
-    if (mode === 'fight' && playerSnake.length > 1 && hitsTail(playerSnake, aiHead)) {
+
+    draw();
+
+    // If both crashed or time over, end game
+    if ((playerCrashed && (mode !== 'fight' || aiCrashed)) || countdown <= 0) {
       gameOver = true;
-      statusDiv.textContent = 'Game Over! AI hit your tail.';
-      endGame();
-      return true;
-    }
-    return false;
-  }
-
-  function gameLoop() {
-  if (gameOver) return;
-
-  playerDir = playerNextDir;
-  const playerMoved = moveSnake(playerSnake, playerDir, mode === 'fight' ? aiSnake : []);
-  if (!playerMoved) {
-    gameOver = true;
-    statusDiv.textContent = 'Game Over! You hit a wall or yourself.';
-    endGame();
-    return;
-  }
-
-  if (mode === 'fight') {
-    aiMove();
-    const aiMoved = moveSnake(aiSnake, aiDir, playerSnake);
-    if (!aiMoved) {
-      gameOver = true;
-      statusDiv.textContent = 'Game Over! AI hit a wall or itself.';
-      endGame();
+      statusDiv.textContent = 'Game Over!';
+      clearInterval(gameIntervalId);
+      clearInterval(countdownIntervalId);
+      timerDiv.textContent = 'Time\'s up!';
       return;
     }
   }
 
-  if (checkApple(playerSnake)) {
-    // maybe increase score or speed later
-  }
-  if (mode === 'fight' && checkApple(aiSnake)) {
-    // AI ate apple, could handle scoring here
+  function updateTimerDisplay() {
+    timerDiv.textContent = `Time Left: ${countdown}s`;
   }
 
-  if (checkTailCollisions()) {
-    return; // gameOver handled inside checkTailCollisions
+  function startCountdown() {
+    countdownIntervalId = setInterval(() => {
+      countdown--;
+      updateTimerDisplay();
+      if (countdown <= 0) {
+        clearInterval(countdownIntervalId);
+        gameOver = true;
+        statusDiv.textContent = 'Time\'s up! Game frozen.';
+        // Stop the game loop
+        clearInterval(gameIntervalId);
+      }
+    }, 1000);
   }
 
-  draw();
+  let gameIntervalId = null;
 
-  gameLoopId = setTimeout(gameLoop, speed);
-}
+  startBtn.addEventListener('click', () => {
+    mode = modeSelect.value;
+    difficulty = difficultySelect.value;
 
-function endGame() {
-  gameRunning = false;
-  startBtn.disabled = false;
-  restartBtn.style.display = 'inline-block';
-  modeSelect.disabled = false;
-  difficultySelect.disabled = false;
-  clearTimeout(gameLoopId);
-}
+    if (!mode || !difficulty) return;
 
-startBtn.addEventListener('click', () => {
-  if (!mode || !difficulty) return;
+    speed = 200;
+    switch(difficulty) {
+      case 'easy': speed = 300; break;
+      case 'medium': speed = 200; break;
+      case 'hard': speed = 100; break;
+      case 'impossible': speed = 80; break;
+    }
 
-  speed = difficulty === 'easy' ? 300 :
-          difficulty === 'medium' ? 200 :
-          difficulty === 'hard' ? 100 :
-          50; // impossible or AI-only fastest speed
+    resetGame();
+    gameRunning = true;
+    startBtn.disabled = true;
+    modeSelect.disabled = true;
+    difficultySelect.disabled = true;
+    countdownInput.disabled = true;
+    restartBtn.style.display = 'inline-block';
 
-  resetGame();
+    startCountdown();
 
-  gameRunning = true;
-  startBtn.disabled = true;
-  restartBtn.style.display = 'none';
-  modeSelect.disabled = true;
-  difficultySelect.disabled = true;
+    gameIntervalId = setInterval(update, speed);
+  });
 
-  gameLoop();
-});
+  restartBtn.addEventListener('click', () => {
+    clearInterval(gameIntervalId);
+    clearInterval(countdownIntervalId);
+    startBtn.disabled = false;
+    modeSelect.disabled = false;
+    difficultySelect.disabled = false;
+    countdownInput.disabled = false;
+    restartBtn.style.display = 'none';
+    statusDiv.textContent = '';
+    timerDiv.textContent = '';
+    scoreboard.textContent = 'Score: 0';
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    gameRunning = false;
+    gameOver = false;
+  });
 
-restartBtn.addEventListener('click', () => {
-  resetGame();
-  draw();
-  gameOver = false;
-  statusDiv.textContent = '';
-  restartBtn.style.display = 'none';
-  startBtn.disabled = false;
-  modeSelect.disabled = false;
-  difficultySelect.disabled = false;
-});
+  modeSelect.addEventListener('change', () => {
+    if (modeSelect.value === 'fight') {
+      difficultySelect.disabled = false;
+      countdownInput.disabled = false;
+      difficultySelect.value = '';
+    } else if (modeSelect.value === 'normal') {
+      difficultySelect.disabled = false;
+      countdownInput.disabled = false;
+      difficultySelect.value = '';
+    } else {
+      difficultySelect.disabled = true;
+      countdownInput.disabled = true;
+    }
+    startBtn.disabled = true;
+  });
 
-modeSelect.addEventListener('change', () => {
-  mode = modeSelect.value;
-  difficultySelect.disabled = false;
-  difficultySelect.value = '';
-  startBtn.disabled = true;
-});
+  difficultySelect.addEventListener('change', () => {
+    startBtn.disabled = !(modeSelect.value && difficultySelect.value);
+  });
 
-difficultySelect.addEventListener('change', () => {
-  difficulty = difficultySelect.value;
-  startBtn.disabled = !(mode && difficulty);
-});
+  countdownInput.addEventListener('input', () => {
+    const val = parseInt(countdownInput.value);
+    if (val >= 5 && val <= 300) {
+      startBtn.disabled = !(modeSelect.value && difficultySelect.value);
+    } else {
+      startBtn.disabled = true;
+    }
+  });
 
-// Keyboard controls
-window.addEventListener('keydown', e => {
-  if (!gameRunning) return;
+  window.addEventListener('keydown', e => {
+    if (!gameRunning || gameOver) return;
 
-  switch(e.key) {
-    case 'ArrowUp':
-    case 'w':
-    case 'W':
-      setDirection({x:0, y:-1});
-      break;
-    case 'ArrowDown':
-    case 's':
-    case 'S':
-      setDirection({x:0, y:1});
-      break;
-    case 'ArrowLeft':
-    case 'a':
-    case 'A':
-      setDirection({x:-1, y:0});
-      break;
-    case 'ArrowRight':
-    case 'd':
-    case 'D':
-      setDirection({x:1, y:0});
-      break;
-  }
-});
-
-// Initial draw before game starts
-resetGame();
-draw();
+    switch(e.key) {
+      case 'ArrowUp': setDirection({x:0, y:-1}); break;
+      case 'ArrowDown': setDirection({x:0, y:1}); break;
+      case 'ArrowLeft': setDirection({x:-1, y:0}); break;
+      case 'ArrowRight': setDirection({x:1, y:0}); break;
+    }
+  });
 
 })();
 </script>
 
 </body>
 </html>
+
