@@ -116,6 +116,7 @@
       if (users[username] && users[username] === password) {
         loggedInUser = username;
         localStorage.setItem('loggedInUser', username);
+        // <-- Instead of taking you to website, show black screen page with button
         showBlackScreen();
       } else {
         showMessage('Invalid username or password', true);
@@ -133,7 +134,6 @@
   });
 
   forbiddenBtn.addEventListener('click', () => {
-    // Replace with your actual forbidden link URL
     window.location.href = 'https://docs.google.com/document/d/17V0c42kK7rWt0fQr4QscPvdpojCMGOrtaEppNhSznmE/edit?usp=sharing';
   });
 </script>
