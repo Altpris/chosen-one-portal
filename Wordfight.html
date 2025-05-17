@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Typing Speed Test VS AI</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+  * { box-sizing: border-box; }
+  body {
+    background: #121212;
+    color: #eee;
+    font-family: 'Poppins', sans-serif;
+    max-width: 700px;
+    margin: 30px auto;
+    padding: 25px 20px;
+    user-select: none;
+    line-height: 1.6;
+  }
+  h1 {
+    color: #4fc3f7;
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 700;
+    text-shadow: 0 0 8px #4fc3f7;
+  }
+  label {
+    font-weight: 600;
+    margin: 15px 0 8px;
+    display: block;
+    font-size: 1rem;
+  }
+  select, input[type=number] {
+    padding: 10px 14px;
+    font-size: 1rem;
+    width: 100%;
+    max-width: 160px;
+    border-radius: 8px;
+    border: none;
+    margin-bottom: 22px;
+    background: #222;
+    color: #eee;
+    box-shadow: inset 0 0 6px #111;
+  }
+  #startBtn {
+    background: #4fc3f7;
+    padding: 16px 32px;
+    color: #121212;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    width: 100%;
+    max-width: 180px;
+    margin: 0 auto 30px;
+    display: block;
+  }
+  #countdown, #timer, #results {
+    text-align: center;
+    font-size: 1.5rem;
+  }
+  #gameArea { display: none; }
+  #wordsDisplay {
+    background: #222;
+    padding: 20px;
+    border-radius: 12px;
+    white-space: pre-wrap;
+    max-height: 220px;
+    overflow-y: auto;
+    box-shadow: 0 0 15px #4fc3f7;
+  }
+  #inputArea input {
+    font-size: 1.4rem;
+    padding: 16px;
+    width: 100%;
+    border-radius: 12px;
+    background: #333;
+    color: #eee;
+  }
+  .progressBar {
+    background: #333;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 24px;
+    margin-bottom: 20px;
+  }
+  .progressBarFill {
+    height: 100%;
+    width: 0%;
+    background: #4fc3f7;
+    transition: width 0.2s ease;
+  }
+  #aiProgressBar .progressBarFill { background: #f48fb1; }
+</style>
+</head>
+<body>
+<h1>Typing Speed Test VS AI</h1>
+<label for="difficulty">Select Difficulty:</label>
+<select id="difficulty">
+  <option value="easy">Easy</option>
+  <option value="medium">Medium</option>
+  <option value="hard">Hard</option>
+  <option value="impossible">Impossible</option>
+</select>
+<label for="timeLimit">Set Race Time (seconds):</label>
+<input type="number" id="timeLimit" value="30" min="5" max="180" />
+<button id="startBtn">Start Race</button>
+<div id="countdown"></div>
+<div id="gameArea">
+  <div id="timer">Time: 0.0s</div>
+  <div id="wordsDisplay"></div>
+  <div id="inputArea">
+    <input type="text" id="userInput" placeholder="Type here..." disabled />
+  </div>
+  <div class="progressLabel">Your Progress</div>
+  <div class="progressBar" id="userProgressBar">
+    <div class="progressBarFill" id="userFill"></div>
+  </div>
+  <div class="progressLabel">AI Progress</div>
+  <div class="progressBar" id="aiProgressBar">
+    <div class="progressBarFill" id="aiFill"></div>
+  </div>
+  <div id="results"></div>
+</div>
+<script>
+const easyWords = ["apple", "ball", "cat", "dog", "egg", "fish", "goat", "hat", "ice", "jam",
+  "kite", "lamp", "man", "nest", "owl", "pig", "queen", "rat", "sun", "top",
+  "van", "wet", "xray", "yak", "zoo", "ant", "bag", "cup", "day", "ear",
+  "fan", "gum", "hen", "ink", "jet", "kid", "log", "mud", "net", "oil",
+  "pen", "quack", "run", "sit", "toy", "up", "vet", "wig", "box", "yes",
+  "zip", "axe", "boy", "car", "dig", "eat", "fog", "get", "hot", "jam",
+  "kid", "leg", "mad", "nap", "odd", "pad", "rag", "sap", "tap", "use",
+  "win", "yak", "zipper", "army", "book", "cold", "duck", "easy", "fire",
+  "girl", "help", "iron", "jump", "kick", "love", "milk", "nice", "open",
+  "play", "quit", "ride", "stop", "tree", "undo", "vote", "walk", "xmas",
+  "yellow", "zebra", "bagel", "cake", "door", "echo", "farm", "gift", "hill",
+  "idea", "joke", "king", "leaf", "moon", "note", "oval", "park", "quiz",
+  "rose", "snow", "time", "unit", "vast", "wave", "xenon", "yarn", "zinc",
+  "air", "bat", "cow", "dig", "elf", "fox", "gap", "hat", "ice", "jet",
+  "key", "lip", "map", "nap", "oak", "pit", "quit", "red", "sun", "tip",
+  "urn", "van", "wig", "yam", "zap", "axe", "bud", "cap", "dip", "ear",
+  "fig", "gum", "hen", "ink", "jar", "kit", "log", "mud", "net", "owl",
+  "pig", "rat", "sip", "tap", "urn", "vet", "wig", "yam", "zip", "ace",
+  "bit", "cat", "dot", "ear", "fan", "gut", "hop", "ice", "jam", "kit",
+  "lot", "man", "nap", "oak", "pet", "run", "sip", "top", "use", "vat",
+  "web", "yak", "zip", "arm", "bat", "cow", "dog", "eel", "fox", "gum",
+  "hog", "ink", "jet", "kit", "lip", "mat", "net", "owl", "pet", "rat",
+  "sip", "tap", "urn", "vet", "wig", "yam", "zip", "ace", "bit", "cup",
+  "dot", "ear", "fan", "gut", "hop", "ice", "jam", "kit", "lot", "man",
+  "nap", "oak", "pet", "run", "sip", "top", "use", "vat", "web", "yak",
+  "zip", "ant", "bat", "cat", "dog", "egg", "fox", "gum", "hen", "ink",
+  "jet", "kit", "lip", "mat", "net", "owl", "pig", "rat", "sip", "tap",
+  "urn", "vet", "wig", "yam", "zip", "ace", "bit", "cup", "dot", "ear",
+  "fan", "gut", "hop", "ice", "jam", "kit", "lot", "man", "nap", "oak",
+  "pet", "run", "sip", "top", "use", "vat", "web", "yak", "zip", "ant"];
+const mediumWords = ["animal", "bottle", "camera", "damage", "effort", "forest", "garden", "hammer",
+  "island", "jungle", "kitchen", "legend", "market", "nature", "object", "people",
+  "quality", "random", "signal", "target", "update", "vacuum", "window", "yellow",
+  "zephyr", "address", "balance", "capture", "dancer", "energy", "fabric", "glance",
+  "helmet", "ignore", "jacket", "keyboard", "leader", "method", "native", "office",
+  "palace", "quiet", "reason", "season", "travel", "unique", "volume", "wonder",
+  "abroad", "button", "circle", "damage", "eleven", "family", "gallery", "handle",
+  "income", "jungle", "kitten", "lizard", "manage", "narrow", "object", "pillow",
+  "rabbit", "salary", "tablet", "uncle", "vacant", "wallet", "yellow", "zigzag",
+  "absence", "biology", "cabinet", "dialogue", "episode", "fashion", "gesture",
+  "horizon", "impress", "journey", "kitchen", "language", "machine", "natural",
+  "operation", "package", "quality", "reality", "science", "teacher", "upgrade",
+  "various", "warning", "yellow", "zealous", "activity", "balance", "capital",
+  "decline", "element", "fiction", "gallery", "history", "interest", "journal",
+  "kingdom", "library", "meeting", "network", "object", "patient", "quality",
+  "reality", "science", "teacher", "upgrade", "various", "warning", "yellow",
+  "zealous", "academic", "balance", "capture", "delivery", "economy", "feature",
+  "general", "holiday", "imagine", "justice", "kingdom", "library", "measure",
+  "natural", "original", "product", "quality", "reason", "science", "teacher",
+  "upgrade", "various", "warning", "yellow", "zealous", "ability", "battery",
+  "captain", "dialogue", "effort", "fashion", "gateway", "horizon", "impress",
+  "jungle", "kitchen", "leader", "message", "native", "office", "patient",
+  "quality", "reality", "science", "teacher", "upgrade", "various", "warning",
+  "yellow", "zealous", "academy", "balance", "capture", "delivery", "economy",
+  "feature", "general", "holiday", "imagine", "justice", "kingdom", "library",
+  "measure", "natural", "original", "product", "quality", "reason", "science",
+  "teacher", "upgrade", "various", "warning", "yellow", "zealous", "active",
+  "battery", "captain", "dialogue", "effort", "fashion", "gateway", "horizon",
+  "impress", "jungle", "kitchen", "leader", "message", "native", "office",
+  "patient", "quality", "reality", "science", "teacher", "upgrade", "various",
+  "warning", "yellow", "zealous", "academy", "balance", "capture", "delivery",
+  "economy", "feature", "general", "holiday", "imagine", "justice", "kingdom",
+  "library", "measure", "natural", "original", "product", "quality", "reason",
+  "science", "teacher", "upgrade", "various", "warning", "yellow", "zealous",
+  "accident", "building", "concern", "dispute", "education", "festival", "govern",
+  "historic", "identity", "judgment", "kitchen", "lifestyle", "marketing",
+  "network", "opinion", "politics", "question", "resource", "strategy", "theater",
+  "universe", "violence", "wildlife", "yesterday", "zoology", "analysis", "balance",
+  "campaign", "decision", "economics", "football", "graduate", "hospital", "industry",
+  "judicial", "language", "movement", "northern", "operator", "proposal", "quantity",
+  "resident", "solution", "technical", "training", "unlimited", "variation", "welcome"];
+const hardWords = ["abandon", "ability", "absence", "academy", "account", "accuse", "achieve", "acquire", "action", "activity",
+"admit", "advance", "advice", "affect", "afford", "agency", "agenda", "almost", "already", "although",
+"amount", "ancient", "animal", "annual", "answer", "anxiety", "anybody", "apparent", "appeal", "appear",
+"approach", "approve", "argue", "arrange", "arrival", "article", "artist", "aspect", "assess", "assign",
+"assist", "assume", "athlete", "attempt", "attend", "attract", "audience", "author", "average", "balance",
+"banquet", "barrier", "battery", "beauty", "because", "before", "belief", "benefit", "besides", "between",
+"billion", "biology", "bizarre", "border", "borrow", "bother", "bottle", "bottom", "boundary", "brilliant",
+"brother", "budget", "builder", "burden", "cabinet", "calculate", "calendar", "camera", "campaign", "capital",
+"capture", "career", "careful", "carrier", "cartoon", "catalog", "category", "caution", "ceiling", "central",
+"century", "certain", "chamber", "channel", "chapter", "charity", "charter", "cheaper", "chicken", "children",
+"chronic", "circuit", "citizen", "clarify", "classic", "climate", "closing", "clothes", "cluster", "coastal",
+"collect", "college", "combine", "comfort", "command", "comment", "common", "company", "compare", "compete",
+"complex", "concept", "concern", "concert", "conduct", "confirm", "connect", "consent", "consist", "contact",
+"contain", "content", "contest", "context", "control", "convert", "copper", "correct", "council", "counter",
+"country", "courage", "covered", "crash", "create", "credit", "cricket", "crucial", "culture", "current",
+"custom", "damage", "dancer", "danger", "darkness", "decade", "decide", "decline", "decorate", "decrease",
+"defense", "define", "degree", "deliver", "demand", "democrat", "deposit", "descend", "describe", "desert",
+"design", "desire", "destroy", "detail", "detect", "develop", "device", "devote", "dialog", "differ",
+"difficult", "digital", "dinner", "diploma", "direct", "discuss", "disease", "display", "distance", "diverse",
+"divide", "doctor", "dollar", "domain", "domestic", "donate", "double", "drama", "drawing", "driver",
+"during", "dynamic", "eager", "economy", "edition", "editor", "educate", "effect", "effort", "eighth",
+"either", "elderly", "element", "elephant", "eligible", "emerge", "emotion", "employ", "enable", "encourage",
+"endure", "energy", "engage", "engine", "enough", "ensure", "entire", "entrance", "envelope", "episode",
+"equal", "equity", "escape", "essay", "estate", "ethics", "evening", "evident", "exact", "example",
+"exceed", "except", "exchange", "excite", "execute", "exercise", "exhibit", "expand", "expect", "expense",
+"explain", "explode", "express", "extend", "extent", "extract", "extreme", "fabric", "facility", "factor",
+"failure", "famous", "family", "fancy", "fashion", "feature", "federal", "feeling", "fiction", "figure",
+"filter", "final", "finance", "finding", "finish", "fishing", "fitness", "flight", "floor", "flower",
+"focus", "follow", "foreign", "forest", "forget", "formal", "format", "former", "fortune", "forward",
+"found", "frequent", "friend", "fringe", "frozen", "funding", "future", "gallery", "general", "generate",
+"genuine", "gesture", "giant", "global", "glory", "golden", "govern", "gravity", "greet", "grind",
+"grocery", "guarantee", "guardian", "guidance", "guilty", "habit", "handle", "happen", "harvest", "healthy",
+"heating", "height", "helpful", "hidden", "history", "holiday", "honest", "horror", "hospital", "hostile",
+"housing", "humor", "hungry", "hunting", "identify", "illegal", "illness", "imagine", "impact", "imply",
+"include", "income", "increase", "indeed", "indicate", "industry", "infant", "inform", "inherit", "initial",
+"injury", "innocent", "inquire", "insight", "install", "instant", "instead", "intense", "interest", "interior",
+"introduce", "invest", "invite", "isolate", "issue", "itself", "jacket", "journal", "journey", "justice",
+"justify", "keen", "killer", "kingdom", "kitchen", "knock", "knowledge", "label", "labor", "lack",
+"landing", "language", "largely", "lasting", "launch", "lawyer", "leader", "league", "learned", "lecture",
+"legal", "leisure", "length", "lesson", "letter", "library", "license", "likely", "limited", "liquid",
+"listen", "literary", "living", "logical", "loyal", "machine", "manager", "manual", "margin", "market",
+"marriage", "massive", "master", "material", "mature", "meaning", "measure", "medical", "meeting", "mention",
+"message", "method", "middle", "military", "million", "mineral", "minimum", "minor", "minute", "mirror",
+"missing", "mission", "mistake", "mixture", "mobile", "modern", "modify", "module", "moment", "monitor",
+"monthly", "moral", "motion", "mountain", "movement", "multiple", "murder", "muscle", "museum", "mutual",
+"mystery", "natural", "nearby", "nearly", "neither", "nervous", "network", "neutral", "notice", "notion",
+"nuclear", "number", "nursing", "object", "observe", "obvious", "occupy", "occur", "offense", "officer",
+"offline", "ongoing", "opening", "operate", "opinion", "oppose", "option", "orange", "order", "organic",
+"origin", "outcome", "outside", "overall", "owner", "package", "package", "paint", "palace", "panel",
+"paper", "parent", "parking", "partner", "passage", "passion", "patient", "pattern", "payment", "peaceful",
+"penalty", "pending", "people", "percent", "perform", "perhaps", "period", "permit", "person", "persuade",
+"phase", "phenomenon", "phrase", "physical", "picture", "piece", "pipeline", "pirate", "pitch", "pixel",
+"planet", "plastic", "player", "please", "pledge", "plenty", "pocket", "poetry", "point", "police",
+"policy", "popular", "portion", "position", "positive", "possible", "posture", "poverty", "precise", "predict",
+"prefer", "prepare", "presence", "present", "prevent", "primary", "printer", "privacy", "private", "problem",
+"process", "produce", "product", "profile", "program", "project", "promise", "promote", "proper", "protect",
+"protein", "protest", "provide", "publish", "purpose", "puzzle", "quality", "quarter", "quickly", "quiet",
+"radical", "random", "range", "rapid", "rather", "reader", "realize", "reason", "receive", "recent",
+"recipe", "record", "recover", "reduce", "reform", "refuse", "region", "regret", "reject", "relate",
+"release", "relief", "remain", "remind", "remove", "repair", "repeat", "replace", "reply", "report",
+"request", "require", "rescue", "research", "reserve", "resist", "resolve", "respect", "respond", "restore",
+"result", "retail", "retain", "retire", "return", "reveal", "review", "reward", "rhythm", "rough",
+"routine", "rural", "safety", "salary", "sample", "saving", "scale", "scarce", "scenario", "schedule",
+"school", "science", "screen", "search", "season", "second", "secret", "sector", "secure", "segment",
+"seize", "select", "seller", "senior", "sense", "series", "service", "session", "setting", "severe",
+"shadow", "shared", "shelter", "short", "should", "signal", "similar", "simple", "simply", "single",
+"sister", "skill", "slave", "sleep", "slide", "slight", "slowly", "social", "society", "softly",
+"solar", "soldier", "somehow", "someone", "source", "soviet", "speech", "spend", "spirit", "split",
+"sponsor", "spread", "spring", "square", "stable", "staff", "stage", "stair", "stand", "standard",
+"start", "state", "station", "status", "steady", "steep", "step", "stick", "still", "stock",
+"stomach", "stone", "storage", "storm", "story", "strain", "strategy", "stream", "street", "stress",
+"strict", "strike", "string", "strip", "strong", "structure", "struggle", "student", "studio", "study",
+"stuff", "style", "subject", "submit", "subway", "success", "such", "sudden", "suffer", "sugar",
+"suggest", "suit", "summer", "supply", "support", "suppose", "sure", "surface", "surprise", "surround",
+"survey", "suspect", "sustain", "swear", "sweep", "sweet", "swift", "symbol", "system", "table",
+"tactic", "tail", "take", "talent", "talk", "tank", "tape", "target", "task", "taste",
+"taxi", "teach", "team", "tear", "technique", "technology", "teen", "tell", "temperature", "temple",
+"temporary", "tennis", "tension", "term", "terrible", "test", "text", "thanks", "theme", "theory",
+"therapy", "there", "thesis", "thick", "thin", "thing", "think", "third", "thirty", "this",
+"threat", "through", "throw", "ticket", "tight", "time", "tiny", "tip", "tire", "title",
+"today", "topic", "total", "touch", "tough", "tour", "toward", "tower", "town", "track",
+"trade", "traffic", "trail", "train", "transfer", "transform", "translate", "transport", "travel", "treat",
+"tree", "trial", "tribe", "trick", "trip", "troop", "trouble", "truck", "true", "trust",
+"truth", "try", "tunnel", "turn", "twice", "type", "typical", "ugly", "ultimate", "unable",
+"uncle", "under", "undo", "unfair", "unite", "unless", "unlike", "until", "unusual", "upset",
+"urban", "urge", "usage", "useful", "user", "usual", "utility", "vacant", "vacuum", "valid",
+"value", "valve", "vanish", "variable", "variety", "various", "vast", "vector", "vehicle", "venture",
+"version", "very", "vessel", "victory", "video", "view", "village", "violate", "virtual", "virus",
+"visible", "vision", "visit", "visual", "vital", "voice", "volume", "vote", "vowel", "voyage",
+"wage", "wait", "wake", "walk", "wall", "wander", "want", "warfare", "warm", "warn",
+"waste", "watch", "water", "wave", "weak", "wealth", "weapon", "wear", "weather", "wedding",
+"week", "weight", "welcome", "west", "wet", "wheel", "where", "whisper", "white", "whole",
+"wide", "wife", "wild", "will", "win", "wind", "window", "wine", "wing", "winner",
+"winter", "wire", "wise", "wish", "witness", "wolf", "woman", "wonder", "wood", "wool",
+"word", "work", "world", "worry", "worth", "wrap", "wreck", "wrestle", "write", "wrong",
+"yard", "year", "yell", "yellow", "yes", "yesterday", "yet", "yield", "young", "youth",
+"zone"
+];
+const impossibleWords = ["abandonment", "absorption", "acceleration", "achievement", "acquisition",
+  "adaptation", "advertisement", "advancement", "aesthetic", "aggregation",
+  "agriculture", "algorithm", "alleviation", "alternation", "ambiguous",
+  "amplification", "anatomical", "annihilation", "anticipation", "apocalypse",
+  "application", "architecture", "articulation", "assimilation", "astonishment",
+  "atmospheric", "authorization", "autonomous", "beneficiary", "biochemical",
+  "biological", "calculation", "calibration", "capitulation", "categorical",
+  "celebration", "certification", "characteristic", "circumstance", "classification",
+  "collaboration", "combination", "commemoration", "communication", "compilation",
+  "complementary", "composition", "comprehensive", "computation", "concentration",
+  "configuration", "confirmation", "confrontation", "congregation", "conservation",
+  "consideration", "constellation", "construction", "consultation", "contemplation",
+  "continuation", "contribution", "conversation", "coordination", "correlation",
+  "correspondence", "counterpart", "creationism", "credential", "criticism",
+  "culmination", "cultivation", "declaration", "dedication", "degradation",
+  "deliberation", "demonstration", "denomination", "dependency", "deprivation",
+  "derivation", "description", "designation", "destabilization", "determination",
+  "differentiation", "diminishment", "discretion", "discrimination", "displacement",
+  "distribution", "documentation", "education", "electrification", "elimination",
+  "emancipation", "embellishment", "emigration", "employment", "encapsulation",
+  "enforcement", "engagement", "enhancement", "enlightenment", "entertainment",
+  "environmental", "epidemiology", "equilibrium", "equivalent", "eradication",
+  "escalation", "establishment", "evaluation", "exaggeration", "examination",
+  "expenditure", "explanation", "exploitation", "facilitation", "familiarity",
+  "fascination", "filtration", "fluctuation", "foundation", "fragmentation",
+  "frustration", "fulfillment", "generation", "graduation", "gratification",
+  "habitation", "harmonization", "headquarters", "hesitation", "hierarchy",
+  "hospitality", "identification", "implementation", "impression", "improvisation",
+  "incarceration", "incineration", "inclination", "incorporation", "independence",
+  "indication", "individuality", "inducement", "industrialization", "inequality",
+  "information", "infrastructure", "innovation", "inscription", "inspection",
+  "installation", "institution", "instruction", "integration", "intellectual",
+  "intensification", "interaction", "interference", "interpretation", "intervention",
+  "introduction", "investigation", "justification", "legislation", "liberation",
+  "limitation", "magnification", "manipulation", "meditation", "migration",
+  "modification", "motivation", "navigation", "negotiation", "notification",
+  "observation", "obstruction", "occupation", "operation", "opposition",
+  "organization", "orientation", "originator", "participation", "penetration",
+  "perception", "performance", "permutation", "persuasion", "pollination",
+  "population", "possession", "precipitation", "predication", "preparation",
+  "presentation", "preservation", "prevention", "privatization", "probation",
+  "procession", "production", "prohibition", "projection", "promotion",
+  "proportion", "prosecution", "protection", "protestation", "publication",
+  "qualification", "radiation", "realization", "recognition", "recollection",
+  "recommendation", "reconciliation", "reconstruction", "recording", "reduction",
+  "referendum", "reflection", "reformation", "registration", "regulation",
+  "rehabilitation", "rejection", "relaxation", "relegation", "relocation",
+  "remediation", "renovation", "reparation", "repetition", "replacement",
+  "representation", "reputation", "resignation", "resolution", "restoration",
+  "restriction", "retaliation", "retention", "retribution", "revaluation",
+  "revolution", "salvation", "sanctification", "satisfaction", "saturation",
+  "sculpture", "segregation", "simplification", "simulation", "specification",
+  "stabilization", "stratification", "subdivision", "substantiation", "subscription",
+  "substitution", "suffocation", "suggestion", "summarization", "supervision",
+  "supplementation", "suspension", "synchronization", "termination", "territory",
+  "translation", "transportation", "trepidation", "unification", "validation",
+  "variation", "vegetation", "verification", "violation", "vocabulary",
+  "vulnerable", "withdrawal", "worshipper", "xenophobia", "youthfulness", "zealousness",
+  "abdication", "abolishment", "absorption", "abstraction", "acceleration",
+  "accumulation", "activation", "adaptation", "addition", "admiration",
+  "adoption", "adornment", "advancement", "advertisement", "aesthetic",
+  "aggregation", "aggression", "agriculture", "allegation", "allocation",
+  "alteration", "amplification", "analogy", "analysis", "anatomy", "annihilation",
+  "annotation", "anticipation", "application", "appreciation", "approach",
+  "approval", "architecture", "argumentation", "arrangement", "articulation",
+  "assertion", "assessment", "association", "assumption", "astonishment",
+  "attachment", "attainment", "attempt", "attendance", "attraction", "authorization",
+  "automation", "autonomy", "availability", "awakening", "background",
+  "balancing", "bargaining", "barrier", "baseball", "behavior", "belonging",
+  "benefactor", "benevolence", "bicycle", "bilingual", "biology", "birthplace",
+  "blacksmith", "blossom", "bodyguard", "boundary", "brainstorm", "breakdown",
+  "breakfast", "breathless", "brilliance", "broadcast", "brotherhood", "building",
+  "bulletin", "business", "butterfly", "calculation", "calendar", "calligraphy",
+  "campaign", "candidate", "cancellation", "canyon", "capacity", "capitalism",
+  "caption", "carpenter", "carriage", "cartoon", "catalog", "catastrophe",
+  "celebration", "celestial", "cemetery", "centrifuge", "ceremony", "certainty",
+  "challenge", "champion", "character", "charity", "chemical", "chemist",
+  "childhood", "chimney", "chocolate", "circular", "civilian", "clarification",
+  "classroom", "cleanliness", "clearing", "cliffhanger", "climate", "clothing",
+  "coastline", "cognition", "collapse", "collaboration", "collection",
+  "collector", "collision", "colonial", "colorful", "columnist", "combatant",
+  "combination", "comfort", "commander", "commentary", "commercial",
+  "commission", "commitment", "committee", "commodity", "communication",
+  "community", "companion", "comparison", "compassion", "competition",
+  "complaint", "completion", "complexity", "compliance", "complication",
+  "component", "composition", "comprehension", "compromise", "computation",
+  "concentration", "conceptual", "concerted", "conclusion", "concrete",
+  "condition", "conference", "confidence", "conflict", "conformity",
+  "confusion", "connection", "conquest", "conscience", "consensus",
+  "conservation", "consideration", "consistency", "conspiracy", "constellation",
+  "constitution", "construction", "consultant", "consultation", "consumer",
+  "contact", "container", "contemporary", "contentment", "contestant",
+  "contextual", "continual", "continuity", "contractor", "contradiction",
+  "contraption", "contribution", "control", "controversy", "convention",
+  "conversion", "conviction", "cooking", "cooperation", "coordinate",
+  "coping", "copyright", "correction", "correlation", "corruption",
+  "cosmetics", "council", "counselor", "countdown", "counterpart",
+  "country", "courageous", "courtesy", "coverage", "covariance", "creation",
+  "creativity", "credential", "creed", "cremation", "criteria", "criterion",
+  "criticism", "crossover", "crucial", "cruelty", "cryptic", "culmination",
+  "cultivation", "cultural", "curiosity", "curriculum", "currency", "cursor",
+  "curtain", "custodian", "customer", "customs", "cylinder", "cybernetic",
+  "cycling", "daily", "damage", "dancer", "dangerous", "darkness", "database",
+  "deadline", "dealing", "death", "debate", "debris", "debt", "decade", "decay",
+  "declaration", "decline", "decode", "dedicate", "deduction", "deed", "default",
+  "defeat", "defense", "deficiency", "definition", "degree", "delay", "delegate",
+  "deliberation", "delight", "deliverance", "delivery", "demand", "democracy",
+  "demolition", "demonstration", "denial", "denominator", "density", "departure",
+  "dependence", "deposit", "depression", "deprivation", "depth", "deputy",
+  "derivation", "descendant", "description", "desertion", "design", "desire",
+  "desk", "despair", "destination", "destroyer", "destruction", "detail",
+  "detector", "determination", "detour", "development", "device", "devotion",
+  "diagnosis", "diagram", "dialect", "dialogue", "diameter", "diamond",
+  "diary", "dictionary", "differentiation", "difficulty", "digestion", "digital",
+  "dignity", "dilemma", "dimension", "diminishment", "dinner", "dinosaur",
+  "diploma", "diplomacy", "direction", "director", "dirt", "disability",
+  "disadvantage", "disagreement", "disappearance", "disappointment", "disaster",
+  "discipline", "disclosure", "discovery", "discretion", "discussion",
+  "disease", "disguise", "disgust", "dish", "disinheritance", "disintegration",
+  "dislocation", "disorder", "disparity", "dispatch", "dispensation",
+  "displacement", "display", "disposal", "dispute", "disregard", "disrespect",
+  "disruption", "dissatisfaction", "dissection", "dissent", "distinction",
+  "distress", "distribution", "district", "disturbance", "diversity",
+  "division", "divorce", "doctor", "doctrine", "document", "dogma", "dollar",
+  "domain", "domestic", "dominance", "donation", "doorway", "dozen", "draft",
+  "dragoon", "drama", "drawer", "dream", "dress", "drift", "drink", "driver",
+  "drizzle", "dropout", "drugstore", "drum", "dryness", "duality", "duckling",
+  "dumbbell", "duration", "duty", "dwarf", "dynamics", "dynamo", "dyslexia",
+  "dysfunction", "eagerness", "earliness", "earnestness", "earthquake",
+  "easiness", "ecology", "economic", "ecosystem", "education", "effectiveness",
+  "efficiency", "effort", "egocentrism", "election", "electricity", "element",
+  "elevation", "elimination", "elite", "emancipation", "embarkation",
+  "embellishment", "emergency", "emigration", "emission", "emotion", "empathy",
+  "emperor", "emphasis", "emplacement", "employment", "empowerment", "emulation",
+  "enablement", "enchantment", "encirclement", "enclosure", "encouragement",
+  "endurance", "enforcement", "engagement", "engineer", "enhancement",
+  "enjoyment", "enlightenment", "enlistment", "enrollment", "enterprise",
+  "entertainment", "enthusiasm", "entitlement", "entrance", "entrepreneur",
+  "environment", "enzyme", "epidemic", "epilogue", "episode", "equalization",
+  "equilibrium", "equipment", "equivalence", "eradication", "erosion",
+  "escalation", "espionage", "essential", "establishment", "estimation",
+  "eternity", "evaluation", "evaporation", "evening", "eventuality", "evidence",
+  "evolution", "examination", "example", "excellence", "exception", "exclusion",
+  "excursion", "execution", "exemption", "exertion", "exhaustion", "exhibition",
+  "existence", "expansion", "expectation", "expedition", "experience",
+  "experiment", "explanation", "exploitation", "exploration"];
+
+const startBtn = document.getElementById("startBtn");
+const countdownEl = document.getElementById("countdown");
+const gameArea = document.getElementById("gameArea");
+const timerEl = document.getElementById("timer");
+const wordsDisplay = document.getElementById("wordsDisplay");
+const userInput = document.getElementById("userInput");
+const userFill = document.getElementById("userFill");
+const aiFill = document.getElementById("aiFill");
+const resultsEl = document.getElementById("results");
+
+let words = [];
+let fullText = "";
+let typedText = "";
+let aiSpeed = 0;
+let interval;
+
+function generateWords(level) {
+  let wordBank = [];
+  if (level === 'easy') wordBank = easyWords;
+  if (level === 'medium') wordBank = mediumWords;
+  if (level === 'hard') wordBank = hardWords;
+  if (level === 'impossible') wordBank = impossibleWords;
+  words = [];
+  for (let i = 0; i < 100; i++) {
+    const randomWord = wordBank[Math.floor(Math.random() * wordBank.length)];
+    words.push(randomWord);
+  }
+  fullText = words.join(" ");
+  wordsDisplay.textContent = fullText;
+}
+
+function startRace() {
+  const difficulty = document.getElementById("difficulty").value;
+  const timeLimit = parseInt(document.getElementById("timeLimit").value);
+  generateWords(difficulty);
+  typedText = "";
+  userInput.value = "";
+  let time = 0;
+  let countdown = 3;
+  countdownEl.textContent = countdown;
+  gameArea.style.display = "none";
+  const countdownInterval = setInterval(() => {
+    countdown--;
+    countdownEl.textContent = countdown > 0 ? countdown : "Go!";
+    if (countdown <= 0) {
+      clearInterval(countdownInterval);
+      countdownEl.textContent = "";
+      gameArea.style.display = "block";
+      userInput.disabled = false;
+      userInput.focus();
+      const startTime = Date.now();
+      aiSpeed = difficulty === 'easy' ? 4 : difficulty === 'medium' ? 5 : difficulty === 'hard' ? 6 : 8;
+      interval = setInterval(() => {
+        time = (Date.now() - startTime) / 1000;
+        if (time >= timeLimit) {
+          endRace();
+          return;
+        }
+        timerEl.textContent = `Time: ${time.toFixed(1)}s`;
+        const userProgress = Math.min(typedText.length / fullText.length * 100, 100);
+        const aiProgress = Math.min((time * aiSpeed) / fullText.length * 100, 100);
+        userFill.style.width = userProgress + "%";
+        aiFill.style.width = aiProgress + "%";
+      }, 100);
+    }
+  }, 1000);
+}
+
+function endRace() {
+  clearInterval(interval);
+  userInput.disabled = true;
+  userInput.value = "";
+  const userChars = typedText.length;
+  const aiChars = aiSpeed * parseFloat(document.getElementById("timeLimit").value);
+  const winner = userChars > aiChars ? "You win!" : userChars < aiChars ? "AI wins!" : "It's a tie!";
+  resultsEl.textContent = `${winner}\nYou typed ${userChars} chars. AI typed ${Math.floor(aiChars)} chars.`;
+}
+
+userInput.addEventListener("keydown", (e) => {
+  if (e.key === "Backspace") {
+    e.preventDefault();
+    return;
+  }
+  const expectedChar = fullText.charAt(typedText.length);
+  if (e.key.length === 1 && e.key !== expectedChar) {
+    e.preventDefault();
+  }
+});
+
+userInput.addEventListener("input", () => {
+  const expected = fullText.slice(0, typedText.length + 1);
+  if (userInput.value === expected) {
+    typedText = userInput.value;
+    wordsDisplay.textContent = fullText.slice(typedText.length);
+  } else {
+    userInput.value = typedText;
+  }
+});
+
+startBtn.addEventListener("click", startRace);
+</script>
+</body>
+</html>
