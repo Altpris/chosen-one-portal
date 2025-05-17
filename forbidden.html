@@ -12,7 +12,7 @@
       padding: 20px;
     }
 
-    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn {
+    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn, .wordfight-btn {
       display: block;
       width: fit-content;
       margin-bottom: 20px;
@@ -72,6 +72,21 @@
       box-shadow: 0 0 30px #60a5fa;
       color: black;
     }
+
+    /* Purple Word fight button */
+    .wordfight-btn {
+      background-color: #7b3fbf; /* purple */
+      color: white;
+      border: 3px solid #9d70d1;
+      box-shadow: 0 0 15px #9d70d1;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .wordfight-btn:hover {
+      background-color: #9d70d1;
+      box-shadow: 0 0 30px #b99cf1;
+      color: black;
+    }
   </style>
 </head>
 <body>
@@ -90,6 +105,10 @@
 
   <button class="snake-btn" onclick="window.open('Snakegame.html', '_blank')">
     🐍 Play Snake Game *with ai against you or normally*
+  </button>
+
+  <button class="wordfight-btn" onclick="window.open('Wordfight.html', '_blank')">
+    Word fight
   </button>
 
 </body>
