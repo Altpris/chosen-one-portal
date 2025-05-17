@@ -12,7 +12,7 @@
       padding: 20px;
     }
 
-    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn, .wordfight-btn {
+    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn, .wordfight-btn, .hangman-btn {
       display: block;
       width: fit-content;
       margin-bottom: 20px;
@@ -87,11 +87,24 @@
       box-shadow: 0 0 30px #b99cf1;
       color: black;
     }
+
+    /* Custom orange hangman button */
+    .hangman-btn {
+      background-color: #d97706; /* orange */
+      color: white;
+      border: 3px solid #f59e0b;
+      box-shadow: 0 0 15px #fbbf24;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .hangman-btn:hover {
+      background-color: #f59e0b;
+      box-shadow: 0 0 30px #fbbf24;
+      color: black;
+    }
   </style>
 </head>
 <body>
-
-
 
   <button class="edits-btn" onclick="window.open('https://docs.google.com/document/d/18jGt9PgRiOy1QmsAHSEt_btTxGY467PAbga5_KB7vig/edit?usp=sharing', '_blank')">
     📜 Old Edits  
@@ -107,6 +120,10 @@
 
   <button class="wordfight-btn" onclick="window.open('Wordfight.html', '_blank')">
     Word fight
+  </button>
+  
+  <button class="hangman-btn" onclick="window.open('FINALLYMADEMYHANGERGAME.html', '_blank')">
+    Hang man vs ai
   </button>
 
 </body>
