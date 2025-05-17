@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Typing Race Game — Premium Edition</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap');
+  
+  body {
+    background: #121212;
+    color: #e0e0e0;
+    font-family: 'Roboto Mono', monospace;
+    margin: 0; padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    justify-content: flex-start;
+  }
+  
+  header {
+    margin-top: 40px;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: #00e676;
+    text-shadow: 0 0 10px #00e676aa;
+    user-select: none;
+  }
+  
+  main {
+    display: flex;
+    gap: 40px;
+    margin: 30px 20px 60px 20px;
+    width: 90%;
+    max-width: 1000px;
+    justify-content: center;
+  }
+  
+  section {
+    background: #1e1e1e;
+    border-radius: 15px;
+    padding: 25px 30px;
+    box-shadow: 0 0 15px #00e67644;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 300px;
+  }
+  
+  section#playerSection {
+    border: 3px solid #00e676;
+  }
+  
+  section#aiSection {
+    border: 3px solid #ff3d00;
+  }
+  
+  h2 {
+    margin: 0 0 15px 0;
+    font-weight: 700;
+    user-select: none;
+  }
+  
+  #playerWord, #aiWord {
+    font-size: 3rem;
+    letter-spacing: 1.2rem;
+    margin: 20px 0;
+    color: #ffffffdd;
+  }
+  
+  #playerWord {
+    color: #00e676;
+  }
+  
+  #aiWord {
+    color: #ff3d00;
+  }
+  
+  #livesDisplay, #aiLivesDisplay {
+    font-weight: 600;
+    font-size: 1.3rem;
+    margin-bottom: 25px;
+    user-select: none;
+  }
+  
+  #letterButtons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  #letterButtons button {
+    background-color: #292929;
+    border: none;
+    border-radius: 6px;
+    color: #e0e0e0;
+    font-weight: 700;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    user-select: none;
+  }
+  
+  #letterButtons button:hover:not(:disabled) {
+    background-color: #00e676;
+    color: #121212;
+  }
+  
+  #letterButtons button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  
+  #controls {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto 40px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  select, button#startBtn {
+    padding: 12px 25px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  select {
+    background: #292929;
+    color: #e0e0e0;
+    width: 160px;
+    text-align: center;
+  }
+  
+  select:focus {
+    outline: 2px solid #00e676;
+  }
+  
+  button#startBtn {
+    background-color: #00e676;
+    color: #121212;
+    box-shadow: 0 0 15px #00e676aa;
+  }
+  
+  button#startBtn:hover:not(:disabled) {
+    background-color: #00c95a;
+  }
+  
+  button#startBtn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  
+  #messageDisplay {
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: #aaa;
+    text-align: center;
+    min-height: 40px;
+    user-select: none;
+  }
+  
+  @media (max-width: 700px) {
+    main {
+      flex-direction: column;
+      align-items: center;
+    }
+    section {
+      width: 90vw;
+      max-width: none;
+    }
+    #letterButtons button {
+      width: 32px;
+      height: 32px;
+    }
+    #playerWord, #aiWord {
+      font-size: 2.5rem;
+      letter-spacing: 1rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>🔥 Typing Race Game — You vs AI 🔥</header>
+
+<main>
+  <section id="playerSection">
+    <h2>Your Word</h2>
+    <div id="playerWord">_ _ _ _ _</div>
+    <div id="livesDisplay">Your Lives: 6</div>
+    <div id="letterButtons"></div>
+  </section>
+  
+  <section id="aiSection">
+    <h2>AI's Word</h2>
+    <div id="aiWord">_ _ _ _ _</div>
+    <div id="aiLivesDisplay">AI Lives: 6</div>
+  </section>
+</main>
+
+<div id="controls">
+  <select id="difficultySelect">
+    <option value="easy">Easy (100 words)</option>
+    <option value="medium" selected>Medium (100 words)</option>
+    <option value="hard">Hard (100 words)</option>
+  </select>
+  <button id="startBtn">Start Game</button>
+  <div id="messageDisplay">Press Start to play!</div>
+</div>
+
+<script>
+(() => {
+  // Expanded word lists with ~100 words each (sampled & categorized)
+  const wordsByDifficulty = {
+    easy: [
+      "apple","about","angle","baby","baker","beach","bench","bird","black","blue",
+      "book","bread","brick","cake","camp","car","cat","chair","cheese","child",
+      "clock","cloud","coat","cold","corn","cow","day","dog","door","dress",
+      "drink","ear","egg","eye","face","farm","fish","floor","flower","food",
+      "foot","game","garden","girl","glass","grass","green","hand","hat","head",
+      "hill","home","horse","house","juice","jump","key","king","kite","leaf",
+      "leg","lion","map","milk","moon","mouth","mouse","night","nose","orange",
+      "park","pen","pig","rain","river","road","room","rope","run","sand",
+      "school","sea","seed","sheep","shoe","shop","sky","snow","sock","star",
+      "stick","stone","sun","table","tree","water","wheel","wind","wing","wood"
+    ],
+    medium: [
+      "absorb","account","accuse","across","acting","action","active","advice","affect","afraid",
+      "against","airport","almost","always","amount","animal","answer","anyone","appear","arrive",
+      "attack","author","autumn","balance","balloon","barrier","battery","beauty","because","become",
+      "between","billion","biology","birthday","blanket","blizzard","brother","builder","burden","calendar",
+      "camera","campaign","candle","capital","captain","carbon","careful","carpet","carrier","cartoon",
+      "casual","catcher","ceiling","cellar","center","central","chance","change","chapter","charity",
+      "chicken","children","chronic","circuit","circus","citizen","clarify","clarity","classic","climate",
+      "closely","clothes","college","combine","comfort","command","comment","company","compare","compete",
+      "complex","compose","concept","concern","concert","conduct","confirm","connect","consent","consist",
+      "contact","contain","content","contest","context","control","convert","correct","costume","courage"
+    ],
+    hard: [
+      "abdicate","aberration","abstain","acquiesce","alacrity","anachronism","anachronistic","antediluvian","approbation","arcane",
+      "ascetic","assiduous","auspicious","avarice","bellicose","benediction","bowdlerize","cacophony","calumny","capitulate",
+      "chicanery","circumlocution","circumspect","coalesce","conflagration","connoisseur","contrite","convivial","corpulent","cursory",
+      "debauchery","deference","denigrate","deride","diaphanous","didactic","dilatory","dissemble","dissonant","ebullient",
+      "efficacious","effrontery","egregious","eleemosynary","emollient","empirical","enervate","ensconce","ephemeral","equanimity",
+      "erudite","esoteric","evanescent","exculpate","execrable","exigent","expurgate","facetious","fatuous","feckless",
+      "felicitous","fractious","garrulous","grandiloquent","gregarious","harangue","hegemony","iconoclast","ignominious","impecunious",
+      "impetuous","implacable","inchoate","indefatigable","indolent","inscrutable","insipid","intransigent","inveterate","irascible",
+      "lachrymose","languid","latency","legerdemain","licentious","limpid","loquacious","luminous","mendacious","mercenary",
+      "mitigate","nefarious","obdurate","obfuscate","obsequious","obstreperous","omnipotent","ostentatious","parsimonious","penurious",
+      "perfidious","perfidy","perfunctory","perspicacious","phlegmatic","pithy","plangent","platitude","precipitate","predilection"
+    ]
+  };
+
+  const alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
+
+  const startBtn = document.getElementById("startBtn");
+  const difficultySelect = document.getElementById("difficultySelect");
+  const letterButtonsDiv = document.getElementById("letterButtons");
+  const playerWordDisplay = document.getElementById("playerWord");
+  const aiWordDisplay = document.getElementById("aiWord");
+  const messageDisplay = document.getElementById("messageDisplay");
+  const livesDisplay = document.getElementById("livesDisplay");
+  const aiLivesDisplay = document.getElementById("aiLivesDisplay");
+
+  let playerWord = "";
+  let playerGuessed = new Set();
+  let playerLives = 6;
+
+  let aiWord = "";
+  let aiGuessed = new Set();
+  let aiLives = 6;
+  let aiGuessIndex = 0;
+
+  let gameStarted = false;
+  let gameOver = false;
+  let aiGuessInterval;
+  let selectedDifficulty = difficultySelect.value;
+
+  function selectRandomWord() {
+    const arr = wordsByDifficulty[selectedDifficulty];
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function updateDisplay(word, guessedSet, displayElement) {
+    let displayText = "";
+    for (let char of word) {
+      displayText += guessedSet.has(char) ? char.toUpperCase() + " " : "_ ";
+    }
+    displayElement.textContent = displayText.trim();
+  }
+
+  function updateLivesDisplay() {
+    livesDisplay.textContent = `Your Lives: ${playerLives}`;
+  }
+
+  function updateAiLivesDisplay() {
+    aiLivesDisplay.textContent = `AI Lives: ${aiLives}`;
+  }
+
+  function toggleLetterButtons(enabled) {
+    const buttons = letterButtonsDiv.querySelectorAll("button");
+    buttons.forEach(btn => (btn.disabled = !enabled));
+  }
+
+  function generateLetterButtons() {
+    letterButtonsDiv.innerHTML = "";
+    for (let letter of alphabet) {
+      const btn = document.createElement("button");
+      btn.textContent = letter.toUpperCase();
+      btn.disabled = true;
+      btn.addEventListener("click", () => {
+        if (!gameStarted || gameOver) return;
+        if (playerGuessed.has(letter)) return;
+
+        playerGuessed.add(letter);
+
+        if (!playerWord.includes(letter)) {
+          playerLives--;
+          updateLivesDisplay();
+          if (playerLives <= 0) {
+            endGame("ai");
+            return;
+          }
+        }
+        updateDisplay(playerWord, playerGuessed, playerWordDisplay);
+        checkWinCondition();
+      });
+      letterButtonsDiv.appendChild(btn);
+    }
+  }
+
+  function checkWinCondition() {
+    // Player wins if all letters guessed
+    if ([...playerWord].every(ch => playerGuessed.has(ch))) {
+      endGame("player");
+      return;
+    }
+    // AI wins if all letters guessed
+    if ([...aiWord].every(ch => aiGuessed.has(ch))) {
+      endGame("ai");
+      return;
+    }
+  }
+
+  function endGame(winner) {
+    gameOver = true;
+    toggleLetterButtons(false);
+    clearInterval(aiGuessInterval);
+
+    if (winner === "player") {
+      messageDisplay.textContent = "🎉 You won! Congratulations!";
+    } else if (winner === "ai") {
+      messageDisplay.textContent = "💀 AI won! Better luck next time!";
+    } else {
+      messageDisplay.textContent = "Game Over!";
+    }
+  }
+
+  function aiMakeGuess() {
+    if (gameOver) return;
+
+    // AI guesses next letter in word in order (simulate simple AI)
+    if (aiGuessIndex >= aiWord.length) {
+      endGame("ai");
+      return;
+    }
+
+    const letter = aiWord[aiGuessIndex];
+    aiGuessIndex++;
+
+    if (!aiGuessed.has(letter)) {
+      aiGuessed.add(letter);
+
+      if (!aiWord.includes(letter)) {
+        aiLives--;
+        updateAiLivesDisplay();
+        if (aiLives <= 0) {
+          endGame("player");
+          return;
+        }
+      }
+      updateDisplay(aiWord, aiGuessed, aiWordDisplay);
+      checkWinCondition();
+    }
+  }
+
+  function startGame() {
+    gameStarted = true;
+    gameOver = false;
+    playerLives = 6;
+    aiLives = 6;
+    playerGuessed.clear();
+    aiGuessed.clear();
+    aiGuessIndex = 0;
+    selectedDifficulty = difficultySelect.value;
+
+    playerWord = selectRandomWord();
+    aiWord = selectRandomWord();
+
+    updateDisplay(playerWord, playerGuessed, playerWordDisplay);
+    updateDisplay(aiWord, aiGuessed, aiWordDisplay);
+    updateLivesDisplay();
+    updateAiLivesDisplay();
+    messageDisplay.textContent = "Game started! Guess letters!";
+    toggleLetterButtons(true);
+
+    clearInterval(aiGuessInterval);
+    let aiSpeed;
+
+if (selectedDifficulty === "easy") {
+  aiSpeed = 5000; // 2 seconds per guess — slower AI
+} else if (selectedDifficulty === "medium") {
+  aiSpeed = 3000; // 1.2 seconds per guess — moderate speed
+} else if (selectedDifficulty === "hard") {
+  aiSpeed = 1200;  // 0.6 seconds per guess — faster AI
+} else {
+  aiSpeed = 1200; // default speed if no difficulty selected
+}
+
+aiGuessInterval = setInterval(aiMakeGuess, aiSpeed);
+ // AI guesses every 1.2 seconds
+  }
+
+  startBtn.addEventListener("click", () => {
+    if (!gameStarted || gameOver) {
+      startGame();
+    }
+  });
+
+  difficultySelect.addEventListener("change", () => {
+    if (!gameStarted) {
+      selectedDifficulty = difficultySelect.value;
+    }
+  });
+
+  generateLetterButtons();
+})();
+</script>
+
+</body>
+</html>
