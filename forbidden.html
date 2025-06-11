@@ -12,7 +12,7 @@
       padding: 20px;
     }
 
-    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn, .wordfight-btn, .hangman-btn {
+    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn, .wordfight-btn, .hangman-btn, .hack-btn {
       display: block;
       width: fit-content;
       margin-bottom: 20px;
@@ -44,9 +44,8 @@
       color: black;
     }
 
-    /* New green calc button */
     .calc-btn {
-      background-color: #16a34a; /* green */
+      background-color: #16a34a;
       color: white;
       border: 3px solid #22c55e;
       box-shadow: 0 0 15px #22c55e;
@@ -58,9 +57,8 @@
       box-shadow: 0 0 30px #4ade80;
     }
 
-    /* Blue glowing snake button */
     .snake-btn {
-      background-color: #1e40af; /* blue */
+      background-color: #1e40af;
       color: white;
       border: 3px solid #3b82f6;
       box-shadow: 0 0 15px #3b82f6;
@@ -73,9 +71,8 @@
       color: black;
     }
 
-    /* Purple Word fight button */
     .wordfight-btn {
-      background-color: #7b3fbf; /* purple */
+      background-color: #7b3fbf;
       color: white;
       border: 3px solid #9d70d1;
       box-shadow: 0 0 15px #9d70d1;
@@ -88,9 +85,8 @@
       color: black;
     }
 
-    /* Custom orange hangman button */
     .hangman-btn {
-      background-color: #d97706; /* orange */
+      background-color: #d97706;
       color: white;
       border: 3px solid #f59e0b;
       box-shadow: 0 0 15px #fbbf24;
@@ -102,11 +98,25 @@
       box-shadow: 0 0 30px #fbbf24;
       color: black;
     }
+
+    /* 🔮 HACK YOURSELF BUTTON */
+    .hack-btn {
+      background-color: #a21caf;
+      color: white;
+      border: 3px solid #e879f9;
+      box-shadow: 0 0 15px #f472b6;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .hack-btn:hover {
+      background-color: #d946ef;
+      box-shadow: 0 0 30px #f472b6;
+      color: black;
+    }
+
   </style>
 </head>
 <body>
-
-
 
   <button class="calc-btn" onclick="window.open('CalcPro.html', '_blank')">
     Just a normal calculator. nothing else.
@@ -122,6 +132,11 @@
   
   <button class="hangman-btn" onclick="window.open('FINALLYMADEMYHANGERGAME.html', '_blank')">
     Hang man vs ai
+  </button>
+
+  <!-- NEW BUTTON -->
+  <button class="hack-btn" onclick="window.open('HackYourself.html', '_blank')">
+    💀 Hack Yourself
   </button>
 
 </body>
