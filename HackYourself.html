@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Terminal Breach</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #00FF00;
+      font-family: "Courier New", monospace;
+      padding: 20px;
+      font-size: 18px;
+      white-space: pre-line;
+    }
+  </style>
+</head>
+<body>
+  <div id="terminal">Initializing terminal breach...\n</div>
+
+  <script>
+    const terminal = document.getElementById("terminal");
+
+    function print(line) {
+      terminal.innerText += line + '\n';
+    }
+
+    function getOS() {
+      const ua = navigator.userAgent;
+      if (/Windows NT 10/.test(ua)) return "Windows 10";
+      if (/Windows NT 11/.test(ua)) return "Windows 11";
+      if (/Mac OS X/.test(ua)) return "macOS";
+      if (/Android/.test(ua)) return "Android";
+      if (/iPhone/.test(ua)) return "iOS";
+      if (/Linux/.test(ua)) return "Linux";
+      return "Unknown OS";
+    }
+
+    function getDeviceType() {
+      const ua = navigator.userAgent;
+      if (/Mobile|Android|iPhone|iPad|iPod/.test(ua)) return "Mobile";
+      if (/Tablet|iPad/.test(ua)) return "Tablet";
+      return "Desktop";
+    }
+
+    function detectBrowser() {
+      const ua = navigator.userAgent;
+      if (navigator.brave && navigator.brave.isBrave) return "Brave";
+      if (ua.includes("Edg")) return "Microsoft Edge";
+      if (ua.includes("OPR") || ua.includes("Opera")) return "Opera";
+      if (ua.includes("Vivaldi")) return "Vivaldi";
+      if (ua.includes("Firefox")) return "Firefox";
+      if (ua.includes("SamsungBrowser")) return "Samsung Internet";
+      if (ua.includes("Chrome")) return "Google Chrome";
+      if (ua.includes("Safari")) return "Safari";
+      return "Unknown";
+    }
+
+    async function detectBraveBrowser() {
+      if (navigator.brave && await navigator.brave.isBrave()) {
+        return "Brave";
+      }
+      return detectBrowser();
+    }
+
+    function getTimezone() {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone;
+    }
+
+    function getTime() {
+      return new Date().toLocaleString();
+    }
+
+    function getScreenSize() {
+      return `${screen.width}x${screen.height}`;
+    }
+
+    function getLanguage() {
+      return navigator.language;
+    }
+
+    function fakeProgress() {
+      let percent = 1;
+      const interval = setInterval(() => {
+        percent += Math.random() * 3;
+        if (percent >= 99) {
+          percent = 99;
+          clearInterval(interval);
+          print("Finalizing breach... Awaiting 2FA crack...");
+        }
+        print(`Extracting sensitive data: ${percent.toFixed(1)}%`);
+      }, 300);
+    }
+
+    function getPublicIP() {
+      fetch('https://api.ipify.org?format=json')
+        .then(res => res.json())
+        .then(data => {
+          print(`Public IP: ${data.ip}`);
+        });
+    }
+
+    function tryGetLocalIP(callback) {
+      try {
+        const pc = new RTCPeerConnection({ iceServers: [] });
+        pc.createDataChannel('test');
+        pc.createOffer().then(offer => pc.setLocalDescription(offer));
+        pc.onicecandidate = event => {
+          if (!event || !event.candidate) return;
+          const match = event.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3})/);
+          if (match) {
+            callback(match[1]);
+            pc.close();
+          }
+        };
+      } catch (e) { }
+    }
+
+    async function start() {
+      print("Scanning device...");
+      await new Promise(r => setTimeout(r, 1000));
+
+      getPublicIP();
+
+      tryGetLocalIP(ip => {
+        print(`Local IP: ${ip}`);
+      });
+
+      const browser = await detectBraveBrowser();
+      print(`Browser: ${browser}`);
+      print(`Operating System: ${getOS()}`);
+      print(`Device Type: ${getDeviceType()}`);
+      print(`Screen Resolution: ${getScreenSize()}`);
+      print(`Language: ${getLanguage()}`);
+      print(`Timezone: ${getTimezone()}`);
+      print(`Local Time: ${getTime()}`);
+
+      await new Promise(r => setTimeout(r, 1000));
+      print("Connecting to remote server...");
+      await new Promise(r => setTimeout(r, 1200));
+      print("Connection established. Extracting data...");
+
+      fakeProgress();
+    }
+
+    start();
+  </script>
+</body>
+</html>
