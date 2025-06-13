@@ -70,43 +70,41 @@
 
   <script>
     let device = '';
-    let aiCPMRange = [0, 0];
+    let aiTarget = 0;
     let gameTime = 10;
     let playerClicks = 0;
-    let aiClicks = 0;
-    let interval;
+    let timeLeft = 10;
     let countdown;
 
-    function selectDevice(selectedDevice) {
-      device = selectedDevice;
+    function selectDevice(type) {
+      device = type;
       document.getElementById("deviceSelect").classList.add("hidden");
       document.getElementById("setup").classList.remove("hidden");
     }
 
     function selectDifficulty(difficulty) {
-      if (device === 'pc') {
-        if (difficulty === 'easy') aiCPMRange = [20, 30];
-        else if (difficulty === 'medium') aiCPMRange = [30, 45];
-        else if (difficulty === 'hard') aiCPMRange = [50, 60];
-        else if (difficulty === 'impossible') aiCPMRange = [60, 70];
-      } else if (device === 'mobile') {
-        if (difficulty === 'easy') aiCPMRange = [4, 9];
-        else if (difficulty === 'medium') aiCPMRange = [10, 20];
-        else if (difficulty === 'hard') aiCPMRange = [20, 35];
-        else if (difficulty === 'impossible') aiCPMRange = [50, 60];
-      }
+      const ranges = {
+        pc: {
+          easy: [20, 30],
+          medium: [30, 40],
+          hard: [40, 50],
+          impossible: [60, 70]
+        },
+        mobile: {
+          easy: [4, 9],
+          medium: [10, 20],
+          hard: [20, 35],
+          impossible: [50, 60]
+        }
+      };
+      const range = ranges[device][difficulty];
+      aiTarget = Math.floor(Math.random() * (range[1] - range[0] + 1)) + range[0];
 
-      startGame();
-    }
-
-    function startGame() {
       playerClicks = 0;
-      aiClicks = 0;
+      timeLeft = gameTime;
       document.getElementById("setup").classList.add("hidden");
       document.getElementById("game").classList.remove("hidden");
       document.getElementById("results").classList.add("hidden");
-
-      let timeLeft = gameTime;
       document.getElementById("timeLeft").textContent = `Time Left: ${timeLeft}s`;
 
       countdown = setInterval(() => {
@@ -114,12 +112,6 @@
         document.getElementById("timeLeft").textContent = `Time Left: ${timeLeft}s`;
         if (timeLeft <= 0) endGame();
       }, 1000);
-
-      let aiCPM = Math.floor(Math.random() * (aiCPMRange[1] - aiCPMRange[0] + 1)) + aiCPMRange[0];
-      let aiInterval = 1000 / (aiCPM / 60);
-      interval = setInterval(() => {
-        aiClicks++;
-      }, aiInterval);
     }
 
     function playerClick() {
@@ -128,11 +120,10 @@
 
     function endGame() {
       clearInterval(countdown);
-      clearInterval(interval);
       document.getElementById("game").classList.add("hidden");
       document.getElementById("results").classList.remove("hidden");
       document.getElementById("results").textContent =
-        `You clicked ${playerClicks} times. AI clicked ${aiClicks} times.`;
+        `You clicked ${playerClicks} times. AI clicked ${aiTarget} times.`;
     }
   </script>
 </body>
