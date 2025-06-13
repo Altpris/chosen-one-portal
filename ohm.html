@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Memo Helper 2000</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', sans-serif;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #title {
+      padding: 10px;
+      font-size: 22px;
+      color: #00ffaa;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      padding: 10px;
+      background: #1e1e1e;
+    }
+
+    .search-bar input {
+      padding: 10px;
+      font-size: 15px;
+      border: 1px solid #333;
+      border-radius: 6px;
+      background: #2a2a2a;
+      color: white;
+    }
+
+    .search-bar input[type="text"] {
+      flex: 1;
+    }
+
+    .search-bar button {
+      padding: 10px 15px;
+      font-size: 14px;
+      background-color: #00ffaa;
+      color: #111;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .search-bar button:hover {
+      background-color: #00dd99;
+    }
+
+    .bookmark-bar {
+      padding: 10px;
+      background: #181818;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .bookmark {
+      padding: 6px 12px;
+      background-color: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #00ffaa;
+      font-size: 13px;
+    }
+
+    .bookmark.delete-mode {
+      background-color: #aa3333;
+      color: #fff;
+    }
+
+    .fake-window {
+      width: 100%;
+      height: calc(100% - 220px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .title-bar {
+      background-color: #222;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .fake-url {
+      background-color: #333;
+      color: #ccc;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.9em;
+      font-family: monospace;
+      flex-grow: 1;
+      margin: 0 10px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .fullscreen-btn {
+      background-color: #444;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    #iframeView {
+      width: 100%;
+      flex-grow: 1;
+      border: none;
+      background-color: #000;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="title">Memo Helper 2000 ??</h1>
+
+  <div class="search-bar" id="searchBar">
+    <input id="urlInput" placeholder="Enter URL (e.g. https://example.com)">
+    <button onclick="loadSite()">Open</button>
+    <button onclick="forceRedirect()">Force Open</button>
+  </div>
+
+  <div class="search-bar">
+    <input id="bookmarkName" placeholder="Bookmark Name">
+    <input id="bookmarkUrl" placeholder="Bookmark URL (https://...)">
+    <button onclick="addBookmark()">Add Bookmark</button>
+    <button onclick="toggleDeleteMode()" id="deleteBtn">Delete Mode: OFF</button>
+  </div>
+
+  <div class="bookmark-bar" id="bookmarkBar"></div>
+
+  <div class="fake-window">
+    <div class="title-bar">
+      <div class="fake-url" id="fakeUrlDisplay">https://memo-helper-2000</div>
+      <button class="fullscreen-btn" id="fsToggleBtn" onclick="toggleFullscreen()">Make Bigger</button>
+    </div>
+    <iframe id="iframeView" src=""></iframe>
+  </div>
+
+  <script>
+    let isFullscreenMode = false;
+    let currentURL = "";
+    let deleteMode = false;
+
+    function loadSite(url = null) {
+      let input = url || document.getElementById("urlInput").value.trim();
+      let finalUrl = input.startsWith("http") ? input : `https://${input}`;
+      currentURL = finalUrl;
+
+      document.getElementById("fakeUrlDisplay").textContent = finalUrl;
+      document.getElementById("iframeView").src = finalUrl;
+    }
+
+    function forceRedirect() {
+      if (currentURL) {
+        window.location.href = currentURL;
+      }
+    }
+
+    function toggleFullscreen() {
+      isFullscreenMode = !isFullscreenMode;
+      const searchBar = document.getElementById("searchBar");
+      const title = document.getElementById("title");
+      const btn = document.getElementById("fsToggleBtn");
+
+      if (isFullscreenMode) {
+        searchBar.classList.add("hidden");
+        title.classList.add("hidden");
+        btn.textContent = "Exit Fullscreen";
+        openFullscreen(document.documentElement);
+      } else {
+        searchBar.classList.remove("hidden");
+        title.classList.remove("hidden");
+        btn.textContent = "Make Bigger";
+        closeFullscreen();
+      }
+    }
+
+    function openFullscreen(elem) {
+      if (elem.requestFullscreen) elem.requestFullscreen();
+      else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+      else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
+    }
+
+    function closeFullscreen() {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      else if (document.msExitFullscreen) document.msExitFullscreen();
+    }
+
+    function addBookmark() {
+      const name = document.getElementById("bookmarkName").value.trim();
+      let url = document.getElementById("bookmarkUrl").value.trim();
+      if (!name || !url) return;
+      url = url.startsWith("http") ? url : `https://${url}`;
+      const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
+      bookmarks.push({ name, url });
+      localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+      renderBookmarks();
+      document.getElementById("bookmarkName").value = "";
+      document.getElementById("bookmarkUrl").value = "";
+    }
+
+    function renderBookmarks() {
+      const container = document.getElementById("bookmarkBar");
+      container.innerHTML = "";
+      const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
+      bookmarks.forEach((b, i) => {
+        const btn = document.createElement("button");
+        btn.className = "bookmark";
+        btn.textContent = b.name;
+        btn.onclick = () => {
+          if (deleteMode) {
+            bookmarks.splice(i, 1);
+            localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+            renderBookmarks();
+          } else {
+            loadSite(b.url);
+          }
+        };
+        if (deleteMode) btn.classList.add("delete-mode");
+        container.appendChild(btn);
+      });
+    }
+
+    function toggleDeleteMode() {
+      deleteMode = !deleteMode;
+      document.getElementById("deleteBtn").textContent = `Delete Mode: ${deleteMode ? "ON" : "OFF"}`;
+      renderBookmarks();
+    }
+
+    document.addEventListener("fullscreenchange", () => {
+      if (!document.fullscreenElement && isFullscreenMode) toggleFullscreen();
+    });
+
+    renderBookmarks();
+  </script>
+</body>
+</html>
