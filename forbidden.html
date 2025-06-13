@@ -12,7 +12,7 @@
       padding: 20px;
     }
 
-    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn, .wordfight-btn, .hangman-btn, .hack-btn, .clicker-btn {
+    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn, .wordfight-btn, .hangman-btn, .hack-btn, .clicker-btn, .memo-btn {
       display: block;
       width: fit-content;
       margin-bottom: 20px;
@@ -127,6 +127,19 @@
       color: black;
     }
 
+    .memo-btn {
+      background-color: #8b5cf6;
+      color: white;
+      border: 3px solid #a78bfa;
+      box-shadow: 0 0 15px #c4b5fd;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .memo-btn:hover {
+      background-color: #a78bfa;
+      box-shadow: 0 0 30px #ddd6fe;
+      color: black;
+    }
   </style>
 </head>
 <body>
@@ -155,9 +168,13 @@
     ⚔️ Clicker Figure: WPM vs AI
   </button>
 
-  <!-- ✅ New Ball Game Button -->
   <button class="calc-btn" onclick="window.open('real.html', '_blank')">
     Nice ball game
+  </button>
+
+  <!-- ✅ NEW MEMO HELPER 2000 BUTTON -->
+  <button class="memo-btn" onclick="window.open('ohm.html', '_blank')">
+    🧠 Memo Helper 2000
   </button>
 
 </body>
