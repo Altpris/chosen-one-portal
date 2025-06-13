@@ -14,7 +14,7 @@
     .hidden {
       display: none;
     }
-    button, input[type="number"] {
+    button {
       padding: 10px 20px;
       margin: 10px;
       font-size: 16px;
@@ -25,7 +25,7 @@
       color: white;
       transition: background-color 0.3s;
     }
-    button:hover, input[type="number"]:hover {
+    button:hover {
       background-color: #a29bfe;
     }
     h1 {
@@ -46,18 +46,18 @@
 <body>
   <h1>Click Battle: You vs AI!</h1>
 
-  <div id="setup">
-    <h2>Select Difficulty:</h2>
-    <button onclick="selectDifficulty('easy')">Easy (20-30 CPM)</button>
-    <button onclick="selectDifficulty('medium')">Medium (30-45 CPM)</button>
-    <button onclick="selectDifficulty('hard')">Hard (50-60 CPM)</button>
-    <button onclick="selectDifficulty('impossible')">Impossible (60-70 CPM)</button>
+  <div id="deviceSelect">
+    <h2>Choose your device:</h2>
+    <button onclick="selectDevice('pc')">PC</button>
+    <button onclick="selectDevice('mobile')">Mobile</button>
   </div>
 
-  <div id="timeSelect" class="hidden">
-    <h2>Select Time (Seconds):</h2>
-    <input type="number" id="timeInput" min="5" max="60" value="10">
-    <button onclick="startGame()">Start!</button>
+  <div id="setup" class="hidden">
+    <h2>Select Difficulty:</h2>
+    <button onclick="selectDifficulty('easy')">Easy</button>
+    <button onclick="selectDifficulty('medium')">Medium</button>
+    <button onclick="selectDifficulty('hard')">Hard</button>
+    <button onclick="selectDifficulty('impossible')">Impossible</button>
   </div>
 
   <div id="game" class="hidden">
@@ -69,41 +69,40 @@
   <div id="results" class="hidden"></div>
 
   <script>
-    let aiCPM = 0;
+    let device = '';
+    let aiCPMRange = [0, 0];
     let gameTime = 10;
     let playerClicks = 0;
     let aiClicks = 0;
     let interval;
     let countdown;
 
-    function selectDifficulty(level) {
-      switch(level) {
-        case 'easy':
-          aiCPM = getRandomInt(20, 30);
-          break;
-        case 'medium':
-          aiCPM = getRandomInt(30, 45);
-          break;
-        case 'hard':
-          aiCPM = getRandomInt(50, 60);
-          break;
-        case 'impossible':
-          aiCPM = getRandomInt(60, 70);
-          break;
-      }
-      document.getElementById("setup").classList.add("hidden");
-      document.getElementById("timeSelect").classList.remove("hidden");
+    function selectDevice(selectedDevice) {
+      device = selectedDevice;
+      document.getElementById("deviceSelect").classList.add("hidden");
+      document.getElementById("setup").classList.remove("hidden");
     }
 
-    function getRandomInt(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
+    function selectDifficulty(difficulty) {
+      if (device === 'pc') {
+        if (difficulty === 'easy') aiCPMRange = [20, 30];
+        else if (difficulty === 'medium') aiCPMRange = [30, 45];
+        else if (difficulty === 'hard') aiCPMRange = [50, 60];
+        else if (difficulty === 'impossible') aiCPMRange = [60, 70];
+      } else if (device === 'mobile') {
+        if (difficulty === 'easy') aiCPMRange = [4, 9];
+        else if (difficulty === 'medium') aiCPMRange = [10, 20];
+        else if (difficulty === 'hard') aiCPMRange = [20, 35];
+        else if (difficulty === 'impossible') aiCPMRange = [50, 60];
+      }
+
+      startGame();
     }
 
     function startGame() {
-      gameTime = parseInt(document.getElementById("timeInput").value);
       playerClicks = 0;
       aiClicks = 0;
-      document.getElementById("timeSelect").classList.add("hidden");
+      document.getElementById("setup").classList.add("hidden");
       document.getElementById("game").classList.remove("hidden");
       document.getElementById("results").classList.add("hidden");
 
@@ -116,7 +115,8 @@
         if (timeLeft <= 0) endGame();
       }, 1000);
 
-      let aiInterval = 1000 / (aiCPM / 60); // convert CPM to interval in ms
+      let aiCPM = Math.floor(Math.random() * (aiCPMRange[1] - aiCPMRange[0] + 1)) + aiCPMRange[0];
+      let aiInterval = 1000 / (aiCPM / 60);
       interval = setInterval(() => {
         aiClicks++;
       }, aiInterval);
