@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WPM vs AI</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #1f1c2c, #928dab);
+      color: white;
+      text-align: center;
+      padding: 50px;
+    }
+    .hidden {
+      display: none;
+    }
+    button, input[type="number"] {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #6c5ce7;
+      color: white;
+      transition: background-color 0.3s;
+    }
+    button:hover, input[type="number"]:hover {
+      background-color: #a29bfe;
+    }
+    h1 {
+      font-size: 48px;
+      margin-bottom: 30px;
+    }
+    h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    #results {
+      margin-top: 30px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Click Battle: You vs AI!</h1>
+
+  <div id="setup">
+    <h2>Select Difficulty:</h2>
+    <button onclick="selectDifficulty(10)">Easy (10 CPM)</button>
+    <button onclick="selectDifficulty(30)">Medium (30 CPM)</button>
+    <button onclick="selectDifficulty(40)">Hard (40 CPM)</button>
+    <button onclick="selectDifficulty(400)">Impossible (400 CPM)</button>
+  </div>
+
+  <div id="timeSelect" class="hidden">
+    <h2>Select Time (Seconds):</h2>
+    <input type="number" id="timeInput" min="5" max="60" value="10">
+    <button onclick="startGame()">Start!</button>
+  </div>
+
+  <div id="game" class="hidden">
+    <h2>Click as fast as you can!</h2>
+    <button onclick="playerClick()">Click Me!</button>
+    <p id="timeLeft"></p>
+  </div>
+
+  <div id="results" class="hidden"></div>
+
+  <script>
+    let aiCPM = 0;
+    let gameTime = 10;
+    let playerClicks = 0;
+    let aiClicks = 0;
+    let interval;
+    let countdown;
+
+    function selectDifficulty(cpm) {
+      aiCPM = cpm;
+      document.getElementById("setup").classList.add("hidden");
+      document.getElementById("timeSelect").classList.remove("hidden");
+    }
+
+    function startGame() {
+      gameTime = parseInt(document.getElementById("timeInput").value);
+      playerClicks = 0;
+      aiClicks = 0;
+      document.getElementById("timeSelect").classList.add("hidden");
+      document.getElementById("game").classList.remove("hidden");
+      document.getElementById("results").classList.add("hidden");
+
+      let timeLeft = gameTime;
+      document.getElementById("timeLeft").textContent = `Time Left: ${timeLeft}s`;
+
+      countdown = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timeLeft").textContent = `Time Left: ${timeLeft}s`;
+        if (timeLeft <= 0) endGame();
+      }, 1000);
+
+      let aiInterval = 60000 / aiCPM;
+      interval = setInterval(() => {
+        aiClicks++;
+      }, aiInterval);
+    }
+
+    function playerClick() {
+      playerClicks++;
+    }
+
+    function endGame() {
+      clearInterval(countdown);
+      clearInterval(interval);
+      document.getElementById("game").classList.add("hidden");
+      document.getElementById("results").classList.remove("hidden");
+      document.getElementById("results").textContent =
+        `You clicked ${playerClicks} times. AI clicked ${aiClicks} times.`;
+    }
+  </script>
+</body>
+</html>
