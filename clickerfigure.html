@@ -84,7 +84,6 @@
     function selectDifficulty(level) {
       difficulty = level;
       playerClicks = 0;
-      aiClicks = generateAIClicks(device, level);
       document.getElementById("setup").classList.add("hidden");
       document.getElementById("results").classList.add("hidden");
       document.getElementById("game").classList.remove("hidden");
@@ -124,10 +123,13 @@
 
     function endGame() {
       clearInterval(countdown);
+      aiClicks = generateAIClicks(device, difficulty); // ensure AI clicks are regenerated correctly
       document.getElementById("game").classList.add("hidden");
       document.getElementById("results").classList.remove("hidden");
       document.getElementById("results").textContent =
         `You clicked ${playerClicks} times. AI clicked ${aiClicks} times.`;
+
+      console.log(`Device: ${device}, Difficulty: ${difficulty}, AI Clicks: ${aiClicks}`);
     }
   </script>
 </body>
