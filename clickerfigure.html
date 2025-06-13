@@ -48,10 +48,10 @@
 
   <div id="setup">
     <h2>Select Difficulty:</h2>
-    <button onclick="selectDifficulty(10)">Easy (10 CPM)</button>
-    <button onclick="selectDifficulty(30)">Medium (30 CPM)</button>
-    <button onclick="selectDifficulty(40)">Hard (40 CPM)</button>
-    <button onclick="selectDifficulty(400)">Impossible (400 CPM)</button>
+    <button onclick="selectDifficulty('easy')">Easy (20-30 CPM)</button>
+    <button onclick="selectDifficulty('medium')">Medium (30-45 CPM)</button>
+    <button onclick="selectDifficulty('hard')">Hard (50-60 CPM)</button>
+    <button onclick="selectDifficulty('impossible')">Impossible (60-70 CPM)</button>
   </div>
 
   <div id="timeSelect" class="hidden">
@@ -76,10 +76,27 @@
     let interval;
     let countdown;
 
-    function selectDifficulty(cpm) {
-      aiCPM = cpm;
+    function selectDifficulty(level) {
+      switch(level) {
+        case 'easy':
+          aiCPM = getRandomInt(20, 30);
+          break;
+        case 'medium':
+          aiCPM = getRandomInt(30, 45);
+          break;
+        case 'hard':
+          aiCPM = getRandomInt(50, 60);
+          break;
+        case 'impossible':
+          aiCPM = getRandomInt(60, 70);
+          break;
+      }
       document.getElementById("setup").classList.add("hidden");
       document.getElementById("timeSelect").classList.remove("hidden");
+    }
+
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
     function startGame() {
@@ -99,7 +116,7 @@
         if (timeLeft <= 0) endGame();
       }, 1000);
 
-      let aiInterval = 60000 / aiCPM;
+      let aiInterval = 1000 / (aiCPM / 60); // convert CPM to interval in ms
       interval = setInterval(() => {
         aiClicks++;
       }, aiInterval);
