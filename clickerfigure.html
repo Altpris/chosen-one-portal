@@ -67,6 +67,7 @@
   </div>
 
   <div id="results" class="hidden"></div>
+  <button id="playAgainBtn" class="hidden" onclick="playAgain()">Play Again</button>
 
   <script>
     let playerClicks = 0;
@@ -86,6 +87,7 @@
       playerClicks = 0;
       document.getElementById("setup").classList.add("hidden");
       document.getElementById("results").classList.add("hidden");
+      document.getElementById("playAgainBtn").classList.add("hidden");
       document.getElementById("game").classList.remove("hidden");
 
       let timeLeft = 10;
@@ -123,13 +125,18 @@
 
     function endGame() {
       clearInterval(countdown);
-      aiClicks = generateAIClicks(device, difficulty); // ensure AI clicks are regenerated correctly
+      aiClicks = generateAIClicks(device, difficulty);
       document.getElementById("game").classList.add("hidden");
       document.getElementById("results").classList.remove("hidden");
       document.getElementById("results").textContent =
         `You clicked ${playerClicks} times. AI clicked ${aiClicks} times.`;
+      document.getElementById("playAgainBtn").classList.remove("hidden");
+    }
 
-      console.log(`Device: ${device}, Difficulty: ${difficulty}, AI Clicks: ${aiClicks}`);
+    function playAgain() {
+      document.getElementById("results").classList.add("hidden");
+      document.getElementById("playAgainBtn").classList.add("hidden");
+      document.getElementById("setup").classList.remove("hidden");
     }
   </script>
 </body>
