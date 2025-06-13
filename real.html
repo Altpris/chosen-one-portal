@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reaction Ball Game</title>
+  <style>
+    body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: white; overflow: hidden; }
+    .centered { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; gap: 20px; padding: 20px; text-align: center; }
+    button, select, input {
+      font-size: 1.2rem;
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      background-color: #1e88e5;
+      color: white;
+      transition: 0.2s;
+    }
+    button:hover { background-color: #1565c0; }
+    select, input { background-color: #2a2a2a; color: white; border: 1px solid #444; }
+    #tutorialScreen, #gameConfig, #gameArea, #results { display: none; }
+    .ball { width: 50px; height: 50px; border-radius: 50%; position: absolute; cursor: pointer; z-index: 5; }
+    #gameArea {
+      position: relative;
+      margin: 0 auto;
+      background: #1c1c1c;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 2px solid #444;
+    }
+  </style>
+</head>
+<body>
+  <!-- Start Screen -->
+  <div id="startScreen" class="centered">
+    <h1 style="font-size: 3rem;">🎯 Reaction Ball Game</h1>
+    <button onclick="showTutorial()">📘 Tutorial</button>
+    <button onclick="showConfig()">🚀 Start</button>
+  </div>
+
+  <!-- Tutorial Screen -->
+  <div id="tutorialScreen" class="centered">
+    <div style="max-width: 600px; text-align: left; font-size: 1.1rem;">
+      <h2>How to Play</h2>
+      <p>Balls appear in a special area based on your device size.</p>
+      <p>If it's <span style="color:red">red</span>, <strong>right-click</strong>. If it's <span style="color:lightblue">blue</span>, <strong>left-click</strong>.</p>
+      <p>You must click within a time limit:</p>
+      <ul>
+        <li><strong>Easy:</strong> Very slow, hit at least 1</li>
+        <li><strong>Medium:</strong> Faster, hit 50%</li>
+        <li><strong>Hard:</strong> Fast, hit 70%</li>
+        <li><strong>Impossible:</strong> 0.75s per ball, hit 100%</li>
+      </ul>
+    </div>
+    <button onclick="backToStart()">🔙 Back</button>
+  </div>
+
+  <!-- Game Configuration -->
+  <div id="gameConfig" class="centered">
+    <label>Select difficulty:
+      <select id="difficulty">
+        <option value="">--Choose--</option>
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+        <option value="impossible">Impossible</option>
+      </select>
+    </label>
+    <label>Game duration (seconds):
+      <input type="number" id="duration" value="30" min="5">
+    </label>
+    <button onclick="validateAndStart()">🎮 Start Game</button>
+    <button onclick="backToStart()">🔙 Back</button>
+  </div>
+
+  <!-- Game Area -->
+  <div id="gameArea"></div>
+
+  <!-- Results -->
+  <div id="results" class="centered"></div>
+
+  <script>
+    const startScreen = document.getElementById('startScreen');
+    const tutorialScreen = document.getElementById('tutorialScreen');
+    const gameConfig = document.getElementById('gameConfig');
+    const gameArea = document.getElementById('gameArea');
+    const results = document.getElementById('results');
+
+    let totalBalls = 0, hits = 0, gameInterval, timeoutID, endTime;
+
+    const difficulties = {
+      easy: { reactionTime: 3000, minHitRate: 1, minHits: 1 },
+      medium: { reactionTime: 1500, minHitRate: 0.5 },
+      hard: { reactionTime: 1000, minHitRate: 0.7 },
+      impossible: { reactionTime: 750, minHitRate: 1 },
+    };
+
+    const isMobile = /iPhone|iPad|Android|webOS|BlackBerry/i.test(navigator.userAgent);
+
+    function adjustGameArea() {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      if (isMobile) {
+        gameArea.style.width = Math.min(vw * 0.9, 360) + 'px';
+        gameArea.style.height = Math.min(vh * 0.5, 300) + 'px';
+      } else {
+        gameArea.style.width = Math.min(vw * 0.6, 800) + 'px';
+        gameArea.style.height = Math.min(vh * 0.6, 500) + 'px';
+      }
+    }
+
+    window.addEventListener('resize', adjustGameArea);
+
+    function showTutorial() {
+      startScreen.style.display = 'none';
+      tutorialScreen.style.display = 'flex';
+    }
+
+    function showConfig() {
+      startScreen.style.display = 'none';
+      gameConfig.style.display = 'flex';
+    }
+
+    function backToStart() {
+      tutorialScreen.style.display = 'none';
+      gameConfig.style.display = 'none';
+      results.style.display = 'none';
+      gameArea.style.display = 'none';
+      startScreen.style.display = 'flex';
+    }
+
+    function validateAndStart() {
+      const difficulty = document.getElementById('difficulty').value;
+      const duration = parseInt(document.getElementById('duration').value);
+      if (!difficulty || isNaN(duration) || duration < 5) {
+        alert("Please select a difficulty and enter a valid duration (min 5s).")
+        return;
+      }
+      gameConfig.style.display = 'none';
+      adjustGameArea();
+      gameArea.style.display = 'block';
+      startGame(difficulty, duration);
+    }
+
+    function startGame(difficulty, duration) {
+      const settings = difficulties[difficulty];
+      totalBalls = 0;
+      hits = 0;
+      gameArea.innerHTML = '';
+      results.innerText = '';
+      endTime = Date.now() + duration * 1000;
+      spawnBall(settings);
+
+      gameInterval = setInterval(() => {
+        if (Date.now() >= endTime) {
+          clearInterval(gameInterval);
+          clearTimeout(timeoutID);
+          gameArea.style.display = 'none';
+          showResults(difficulty);
+        } else {
+          spawnBall(settings);
+        }
+      }, settings.reactionTime + 200);
+    }
+
+    function spawnBall(settings) {
+      gameArea.innerHTML = '';
+      const ball = document.createElement('div');
+      const isRed = Math.random() < 0.5;
+      ball.style.background = isRed ? 'red' : 'lightblue';
+      ball.className = 'ball';
+
+      const bounds = gameArea.getBoundingClientRect();
+      const maxX = bounds.width - 50;
+      const maxY = bounds.height - 50;
+
+      ball.style.left = Math.random() * maxX + 'px';
+      ball.style.top = Math.random() * maxY + 'px';
+
+      gameArea.appendChild(ball);
+      totalBalls++;
+
+      function cleanup() { ball.remove(); }
+
+      ball.addEventListener('click', (e) => {
+        if (!isRed) { hits++; cleanup(); }
+        e.preventDefault();
+      });
+
+      ball.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        if (isRed) { hits++; cleanup(); }
+      });
+
+      timeoutID = setTimeout(cleanup, settings.reactionTime);
+    }
+
+    function showResults(difficulty) {
+      const settings = difficulties[difficulty];
+      const hitRate = hits / totalBalls;
+      const passed = (settings.minHits && hits >= settings.minHits) || hitRate >= settings.minHitRate;
+      results.style.display = 'flex';
+      results.innerHTML = `
+        <h2>✅ Game Over</h2>
+        <p>Balls appeared: ${totalBalls}</p>
+        <p>Correct hits: ${hits}</p>
+        <p>Hit rate: ${(hitRate * 100).toFixed(2)}%</p>
+        <p><strong style="color:${passed ? 'lime' : 'crimson'}">${passed ? 'You passed!' : 'You failed!'}</strong></p>
+        <button onclick="backToStart()">🔁 Back to Menu</button>
+      `;
+    }
+  </script>
+</body>
+</html>
