@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WPM vs AI</title>
+  <title>Click Battle: You vs AI!</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -14,7 +14,7 @@
     .hidden {
       display: none;
     }
-    button {
+    button, input[type="number"] {
       padding: 10px 20px;
       margin: 10px;
       font-size: 16px;
@@ -25,7 +25,7 @@
       color: white;
       transition: background-color 0.3s;
     }
-    button:hover {
+    button:hover, input[type="number"]:hover {
       background-color: #a29bfe;
     }
     h1 {
@@ -47,7 +47,7 @@
   <h1>Click Battle: You vs AI!</h1>
 
   <div id="deviceSelect">
-    <h2>Choose your device:</h2>
+    <h2>Are you on PC or Mobile?</h2>
     <button onclick="selectDevice('pc')">PC</button>
     <button onclick="selectDevice('mobile')">Mobile</button>
   </div>
@@ -69,20 +69,37 @@
   <div id="results" class="hidden"></div>
 
   <script>
-    let device = '';
-    let aiTarget = 0;
-    let gameTime = 10;
     let playerClicks = 0;
-    let timeLeft = 10;
+    let aiClicks = 0;
     let countdown;
+    let device = '';
+    let difficulty = '';
 
-    function selectDevice(type) {
-      device = type;
+    function selectDevice(selectedDevice) {
+      device = selectedDevice;
       document.getElementById("deviceSelect").classList.add("hidden");
       document.getElementById("setup").classList.remove("hidden");
     }
 
-    function selectDifficulty(difficulty) {
+    function selectDifficulty(level) {
+      difficulty = level;
+      playerClicks = 0;
+      aiClicks = generateAIClicks(device, level);
+      document.getElementById("setup").classList.add("hidden");
+      document.getElementById("results").classList.add("hidden");
+      document.getElementById("game").classList.remove("hidden");
+
+      let timeLeft = 10;
+      document.getElementById("timeLeft").textContent = `Time Left: ${timeLeft}s`;
+
+      countdown = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timeLeft").textContent = `Time Left: ${timeLeft}s`;
+        if (timeLeft <= 0) endGame();
+      }, 1000);
+    }
+
+    function generateAIClicks(device, difficulty) {
       const ranges = {
         pc: {
           easy: [20, 30],
@@ -97,21 +114,8 @@
           impossible: [50, 60]
         }
       };
-      const range = ranges[device][difficulty];
-      aiTarget = Math.floor(Math.random() * (range[1] - range[0] + 1)) + range[0];
-
-      playerClicks = 0;
-      timeLeft = gameTime;
-      document.getElementById("setup").classList.add("hidden");
-      document.getElementById("game").classList.remove("hidden");
-      document.getElementById("results").classList.add("hidden");
-      document.getElementById("timeLeft").textContent = `Time Left: ${timeLeft}s`;
-
-      countdown = setInterval(() => {
-        timeLeft--;
-        document.getElementById("timeLeft").textContent = `Time Left: ${timeLeft}s`;
-        if (timeLeft <= 0) endGame();
-      }, 1000);
+      let [min, max] = ranges[device][difficulty];
+      return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
     function playerClick() {
@@ -123,7 +127,7 @@
       document.getElementById("game").classList.add("hidden");
       document.getElementById("results").classList.remove("hidden");
       document.getElementById("results").textContent =
-        `You clicked ${playerClicks} times. AI clicked ${aiTarget} times.`;
+        `You clicked ${playerClicks} times. AI clicked ${aiClicks} times.`;
     }
   </script>
 </body>
