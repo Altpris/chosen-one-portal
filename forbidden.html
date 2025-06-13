@@ -12,7 +12,7 @@
       padding: 20px;
     }
 
-    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn, .wordfight-btn, .hangman-btn, .hack-btn {
+    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn, .wordfight-btn, .hangman-btn, .hack-btn, .clicker-btn {
       display: block;
       width: fit-content;
       margin-bottom: 20px;
@@ -99,7 +99,6 @@
       color: black;
     }
 
-    /* 🔮 HACK YOURSELF BUTTON */
     .hack-btn {
       background-color: #a21caf;
       color: white;
@@ -111,6 +110,20 @@
     .hack-btn:hover {
       background-color: #d946ef;
       box-shadow: 0 0 30px #f472b6;
+      color: black;
+    }
+
+    .clicker-btn {
+      background-color: #0891b2;
+      color: white;
+      border: 3px solid #22d3ee;
+      box-shadow: 0 0 15px #22d3ee;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .clicker-btn:hover {
+      background-color: #22d3ee;
+      box-shadow: 0 0 30px #67e8f9;
       color: black;
     }
 
@@ -134,9 +147,13 @@
     Hang man vs ai
   </button>
 
-  <!-- NEW BUTTON -->
   <button class="hack-btn" onclick="window.open('HackYourself.html', '_blank')">
     💀 Hack Yourself
+  </button>
+
+  <!-- NEW Clicker Figure BUTTON -->
+  <button class="clicker-btn" onclick="window.open('clickerfigure.html', '_blank')">
+    ⚔️ Clicker Figure: WPM vs AI
   </button>
 
 </body>
