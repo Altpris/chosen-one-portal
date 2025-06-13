@@ -41,18 +41,7 @@
 
   <!-- Tutorial Screen -->
   <div id="tutorialScreen" class="centered">
-    <div style="max-width: 600px; text-align: left; font-size: 1.1rem;">
-      <h2>How to Play</h2>
-      <p>Balls appear in a special area based on your device size.</p>
-      <p>If it's <span style="color:red">red</span>, <strong>right-click</strong>. If it's <span style="color:lightblue">blue</span>, <strong>left-click</strong>.</p>
-      <p>You must click within a time limit:</p>
-      <ul>
-        <li><strong>Easy:</strong> Very slow, hit at least 1</li>
-        <li><strong>Medium:</strong> Faster, hit 50%</li>
-        <li><strong>Hard:</strong> Fast, hit 70%</li>
-        <li><strong>Impossible:</strong> 0.75s per ball, hit 100%</li>
-      </ul>
-    </div>
+    <div id="tutorialText" style="max-width: 600px; text-align: left; font-size: 1.1rem;"></div>
     <button onclick="backToStart()">🔙 Back</button>
   </div>
 
@@ -86,6 +75,9 @@
     const gameConfig = document.getElementById('gameConfig');
     const gameArea = document.getElementById('gameArea');
     const results = document.getElementById('results');
+    const tutorialText = document.getElementById('tutorialText');
+
+    const isMobile = /iPhone|iPad|Android|webOS|BlackBerry|Tablet|Mobile/i.test(navigator.userAgent);
 
     let totalBalls = 0, hits = 0, gameInterval, timeoutID, endTime;
 
@@ -95,8 +87,6 @@
       hard: { reactionTime: 1000, minHitRate: 0.7 },
       impossible: { reactionTime: 750, minHitRate: 1 },
     };
-
-    const isMobile = /iPhone|iPad|Android|webOS|BlackBerry/i.test(navigator.userAgent);
 
     function adjustGameArea() {
       const vw = window.innerWidth;
@@ -115,6 +105,33 @@
     function showTutorial() {
       startScreen.style.display = 'none';
       tutorialScreen.style.display = 'flex';
+      if (isMobile) {
+        tutorialText.innerHTML = `
+          <h2>How to Play (Mobile)</h2>
+          <p>Red balls will appear in a special area.</p>
+          <p><strong>Tap</strong> the red balls as fast as you can!</p>
+          <p>You must hit them within a time limit based on difficulty:</p>
+          <ul>
+            <li><strong>Easy:</strong> Slow, hit at least 1</li>
+            <li><strong>Medium:</strong> Faster, hit 50%</li>
+            <li><strong>Hard:</strong> Fast, hit 70%</li>
+            <li><strong>Impossible:</strong> 0.75s per ball, hit 100%</li>
+          </ul>
+        `;
+      } else {
+        tutorialText.innerHTML = `
+          <h2>How to Play (PC)</h2>
+          <p>Balls appear in a special area based on your device size.</p>
+          <p>If it's <span style="color:red">red</span>, <strong>right-click</strong>. If it's <span style="color:lightblue">blue</span>, <strong>left-click</strong>.</p>
+          <p>You must click within a time limit:</p>
+          <ul>
+            <li><strong>Easy:</strong> Slow, hit at least 1</li>
+            <li><strong>Medium:</strong> Faster, hit 50%</li>
+            <li><strong>Hard:</strong> Fast, hit 70%</li>
+            <li><strong>Impossible:</strong> 0.75s per ball, hit 100%</li>
+          </ul>
+        `;
+      }
     }
 
     function showConfig() {
@@ -167,7 +184,7 @@
     function spawnBall(settings) {
       gameArea.innerHTML = '';
       const ball = document.createElement('div');
-      const isRed = Math.random() < 0.5;
+      const isRed = isMobile ? true : Math.random() < 0.5;
       ball.style.background = isRed ? 'red' : 'lightblue';
       ball.className = 'ball';
 
@@ -183,15 +200,21 @@
 
       function cleanup() { ball.remove(); }
 
-      ball.addEventListener('click', (e) => {
-        if (!isRed) { hits++; cleanup(); }
-        e.preventDefault();
-      });
-
-      ball.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        if (isRed) { hits++; cleanup(); }
-      });
+      if (isMobile) {
+        ball.addEventListener('click', () => {
+          hits++;
+          cleanup();
+        });
+      } else {
+        ball.addEventListener('click', (e) => {
+          if (!isRed) { hits++; cleanup(); }
+          e.preventDefault();
+        });
+        ball.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          if (isRed) { hits++; cleanup(); }
+        });
+      }
 
       timeoutID = setTimeout(cleanup, settings.reactionTime);
     }
