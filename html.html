@@ -222,29 +222,56 @@
       }
     }
 
-    function showInfo() {
-      container.innerHTML = '';
-      body.style.backgroundColor = 'black';
-      const info = document.createElement('div');
-      info.className = 'info-box';
-      typing.play();
+  function showInfo() {
+  container.innerHTML = '';
+  body.style.backgroundColor = 'black';
+  const info = document.createElement('div');
+  info.className = 'info-box';
+  typing.play();
 
-      fetch('https://api.ipify.org?format=json')
-        .then(res => res.json())
-        .then(data => {
-          setTimeout(() => {
-            info.innerHTML = `IP: ${data.ip}<br>Browser: Brave<br>Device: Windows PC<br><span class="glitch">SYSTEM BREACH</span>`;
-            container.appendChild(info);
-            const redBtn = document.createElement('button');
-            redBtn.textContent = "THAT'S IT. I'M LEAKING YOUR INFO...";
-            redBtn.style.backgroundColor = 'red';
-            redBtn.style.color = 'white';
-            redBtn.style.marginTop = '30px';
-            redBtn.onclick = explode;
-            container.appendChild(redBtn);
-          }, 1000);
-        });
-    }
+  // Detect browser name
+  function getBrowser() {
+    const ua = navigator.userAgent;
+    if (ua.includes("Edg")) return "Microsoft Edge";
+    if (ua.includes("OPR") || ua.includes("Opera")) return "Opera";
+    if (ua.includes("Chrome")) return "Google Chrome";
+    if (ua.includes("Firefox")) return "Mozilla Firefox";
+    if (ua.includes("Safari")) return "Safari";
+    return "Unknown Browser";
+  }
+
+  // Detect device type
+  function getDeviceType() {
+    const ua = navigator.userAgent;
+    if (/Mobi|Android|iPhone|iPad|iPod/i.test(ua)) return "Mobile / Tablet";
+    return "Desktop / Laptop";
+  }
+
+  fetch('https://api.ipify.org?format=json')
+    .then(res => res.json())
+    .then(data => {
+      const browser = getBrowser();
+      const device = getDeviceType();
+
+      setTimeout(() => {
+        info.innerHTML = `
+          IP: ${data.ip}<br>
+          Browser: ${browser}<br>
+          Device: ${device}<br>
+          <span class="glitch">SYSTEM BREACH</span>`;
+        container.appendChild(info);
+
+        const redBtn = document.createElement('button');
+        redBtn.textContent = "THAT'S IT. I'M LEAKING YOUR INFO...";
+        redBtn.style.backgroundColor = 'red';
+        redBtn.style.color = 'white';
+        redBtn.style.marginTop = '30px';
+        redBtn.onclick = explode;
+        container.appendChild(redBtn);
+      }, 1000);
+    });
+}
+
 
     function explode() {
       container.innerHTML = '';
