@@ -12,7 +12,7 @@
       padding: 20px;
     }
 
-    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn, .wordfight-btn, .hangman-btn, .hack-btn, .clicker-btn, .memo-btn {
+    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn, .wordfight-btn, .hangman-btn, .hack-btn, .clicker-btn, .memo-btn, .leave-btn {
       display: block;
       width: fit-content;
       margin-bottom: 20px;
@@ -140,6 +140,20 @@
       box-shadow: 0 0 30px #ddd6fe;
       color: black;
     }
+
+    .leave-btn {
+      background-color: #dc2626;
+      color: white;
+      border: 3px solid #ef4444;
+      box-shadow: 0 0 15px #ef4444;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .leave-btn:hover {
+      background-color: #ef4444;
+      box-shadow: 0 0 30px #f87171;
+      color: black;
+    }
   </style>
 </head>
 <body>
@@ -172,14 +186,13 @@
     Nice ball game
   </button>
 
-  <!-- ✅ NEW MEMO HELPER 2000 BUTTON -->
   <button class="memo-btn" onclick="window.open('ohm.html', '_blank')">
     🧠 Memo Helper 2000
   </button>
 
   <!-- ✅ NEW 'Leave the button alone game' BUTTON -->
-  <button class="forbidden-btn" onclick="window.open('html.html', '_blank')">
-    Leave the button alone game
+  <button class="leave-btn" onclick="window.open('html.html', '_blank')">
+    🚫 Leave the button alone game
   </button>
 
 </body>
