@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leave Me Alone</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      transition: background 0.5s ease;
+    }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    #container {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1;
+      flex-direction: column;
+    }
+    button {
+      padding: 20px 40px;
+      font-size: 24px;
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      background-color: #444;
+      color: white;
+    }
+    .shake {
+      animation: shake 0.5s infinite;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translate(1px, -1px); }
+      25% { transform: translate(-1px, -2px); }
+      50% { transform: translate(-3px, 0px); }
+      75% { transform: translate(2px, 2px); }
+    }
+    .scroll-area {
+      height: 300px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      background: #ccc;
+      padding: 10px;
+      border-radius: 10px;
+    }
+    .hidden { display: none; }
+    .info-box {
+      background-color: black;
+      color: #00ff00;
+      padding: 50px;
+      font-size: 32px;
+      font-family: monospace;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .particles {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 9999;
+    }
+    .particle {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      background-color: red;
+      opacity: 0.8;
+      animation: explode 1s ease-out forwards;
+      border-radius: 50%;
+    }
+    @keyframes explode {
+      0% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: translateY(-200px) scale(0.1); }
+    }
+    .left-hint {
+      position: absolute;
+      left: 20px;
+      top: 100px;
+      color: orange;
+      font-size: 28px;
+      font-weight: bold;
+    }
+    .bg-shake {
+      animation: bgShake 0.1s infinite;
+    }
+    @keyframes bgShake {
+      0%, 100% { background-color: red; }
+      50% { background-color: black; }
+    }
+    .glitch {
+      color: red;
+      font-size: 32px;
+      animation: glitch 0.3s infinite;
+      font-family: 'Courier New', monospace;
+    }
+    @keyframes glitch {
+      0% { transform: translate(0); }
+      20% { transform: translate(-2px, 2px); }
+      40% { transform: translate(2px, -2px); }
+      60% { transform: translate(-1px, 1px); }
+      80% { transform: translate(1px, -1px); }
+      100% { transform: translate(0); }
+    }
+    .flash {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: red;
+      z-index: 10000;
+      opacity: 0;
+      animation: flashAnim 0.2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes flashAnim {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 0.5; }
+    }
+    .health-bar {
+      width: 300px;
+      height: 25px;
+      background-color: #444;
+      border: 2px solid #fff;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .health-inner {
+      height: 100%;
+      background-color: red;
+      width: 100%;
+      transition: width 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <button id="mainButton">Leave Me Alone</button>
+  </div>
+  <div class="particles" id="particles"></div>
+  <audio id="typingSound" src="https://www.soundjay.com/mechanical/keyboard-1.mp3"></audio>
+  <script>
+    let stage = 0;
+    const button = document.getElementById('mainButton');
+    const container = document.getElementById('container');
+    const body = document.body;
+    const particles = document.getElementById('particles');
+    const typing = document.getElementById('typingSound');
+
+    function spawnParticles(x, y, count = 25, colors = ['red']) {
+      for (let i = 0; i < count; i++) {
+        const part = document.createElement('div');
+        part.classList.add('particle');
+        part.style.left = `${x}px`;
+        part.style.top = `${y}px`;
+        part.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        part.style.animationDuration = `${0.5 + Math.random()}s`;
+        part.style.transform = `rotate(${Math.random() * 360}deg) scale(${0.5 + Math.random()})`;
+        particles.appendChild(part);
+        setTimeout(() => part.remove(), 1500);
+      }
+    }
+
+    function spawnMassiveParticles(size = 3) {
+      for (let i = 0; i < 300; i++) {
+        const x = Math.random() * window.innerWidth;
+        const y = Math.random() * window.innerHeight;
+        spawnParticles(x, y, size, ['red', 'orange', 'yellow']);
+      }
+    }
+
+    function nextStage() {
+      stage++;
+      const { x, y, width, height } = button.getBoundingClientRect();
+      spawnParticles(x + width/2, y + height/2, 100, ['red', 'orange', 'yellow']);
+
+      if (stage === 1) {
+        button.textContent = 'Seriously, stop...';
+        body.style.backgroundColor = '#660000';
+        button.style.backgroundColor = 'orange';
+        button.classList.add('shake');
+        spawnMassiveParticles(2);
+      } else if (stage === 2) {
+        body.style.backgroundColor = '#f0f0f0';
+        button.remove();
+        const hint = document.createElement('div');
+        hint.className = 'left-hint';
+        hint.textContent = 'Hint: One button is different';
+        document.body.appendChild(hint);
+        const scroll = document.createElement('div');
+        scroll.className = 'scroll-area';
+        for (let i = 0; i < 50; i++) {
+          const fakeBtn = document.createElement('button');
+          fakeBtn.textContent = 'leave me alone';
+          if (i === 42) {
+            fakeBtn.style.fontFamily = 'cursive';
+            fakeBtn.style.color = 'green';
+            fakeBtn.onclick = () => {
+              hint.remove();
+              showInfo();
+            };
+          }
+          scroll.appendChild(fakeBtn);
+        }
+        container.appendChild(scroll);
+      }
+    }
+
+    function showInfo() {
+      container.innerHTML = '';
+      body.style.backgroundColor = 'black';
+      const info = document.createElement('div');
+      info.className = 'info-box';
+      typing.play();
+
+      fetch('https://api.ipify.org?format=json')
+        .then(res => res.json())
+        .then(data => {
+          setTimeout(() => {
+            info.innerHTML = `IP: ${data.ip}<br>Browser: Brave<br>Device: Windows PC<br><span class="glitch">SYSTEM BREACH</span>`;
+            container.appendChild(info);
+            const redBtn = document.createElement('button');
+            redBtn.textContent = "THAT'S IT. I'M LEAKING YOUR INFO...";
+            redBtn.style.backgroundColor = 'red';
+            redBtn.style.color = 'white';
+            redBtn.style.marginTop = '30px';
+            redBtn.onclick = explode;
+            container.appendChild(redBtn);
+          }, 1000);
+        });
+    }
+
+    function explode() {
+      container.innerHTML = '';
+      body.style.background = 'radial-gradient(red, black)';
+      spawnMassiveParticles(4);
+
+      const win = document.createElement('div');
+      win.textContent = 'Try Again';
+      win.style.fontSize = '48px';
+      win.style.color = 'white';
+      win.style.marginTop = '20px';
+      win.style.textAlign = 'center';
+      container.appendChild(win);
+
+      const playAgain = document.createElement('button');
+      playAgain.textContent = 'Play Again';
+      playAgain.onclick = finalPhase;
+      container.appendChild(playAgain);
+    }
+
+function finalPhase() {
+  container.innerHTML = '';
+  body.classList.add('bg-shake');
+  body.style.backgroundColor = 'orange';
+
+  const flash = document.createElement('div');
+  flash.className = 'flash';
+  document.body.appendChild(flash);
+
+  let hp = 30;
+  let timeLeft = 30;
+
+  const hitSound = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_b043593d54.mp3?filename=click-124467.mp3');
+  const winSound = new Audio('https://cdn.pixabay.com/download/audio/2022/03/10/audio_dbe0ed3b82.mp3?filename=explosion-6081.mp3');
+  const loseSound = new Audio('https://cdn.pixabay.com/download/audio/2022/03/10/audio_77225d11fa.mp3?filename=lose-1-6522.mp3');
+
+  // Health Bar
+  const healthBar = document.createElement('div');
+  healthBar.style.width = '300px';
+  healthBar.style.height = '25px';
+  healthBar.style.border = '3px solid red';
+  healthBar.style.marginBottom = '10px';
+  healthBar.style.background = '#111';
+  const healthInner = document.createElement('div');
+  healthInner.style.height = '100%';
+  healthInner.style.width = '100%';
+  healthInner.style.background = 'lime';
+  healthInner.style.transition = 'width 0.2s';
+  healthBar.appendChild(healthInner);
+  container.appendChild(healthBar);
+
+  // Timer Display
+  const timerDisplay = document.createElement('div');
+  timerDisplay.style.color = 'white';
+  timerDisplay.style.fontSize = '24px';
+  timerDisplay.style.marginBottom = '20px';
+  timerDisplay.textContent = `Time Left: ${timeLeft}s`;
+  container.appendChild(timerDisplay);
+
+  const escapeBtn = document.createElement('button');
+  escapeBtn.textContent = 'HOW DID YOU KNOW I WAS DISGUISED AS THE TRY AGAIN BUTTON?????????';
+  escapeBtn.style.backgroundColor = 'red';
+  escapeBtn.style.color = 'white';
+  escapeBtn.style.position = 'absolute';
+  container.appendChild(escapeBtn);
+
+  function randomTeleport(btn) {
+    const pad = 50;
+    const x = Math.random() * (window.innerWidth - btn.offsetWidth - pad);
+    const y = Math.random() * (window.innerHeight - btn.offsetHeight - pad);
+    btn.style.left = `${x}px`;
+    btn.style.top = `${y}px`;
+  }
+
+  randomTeleport(escapeBtn);
+
+  escapeBtn.onclick = () => {
+    if (hp <= 0 || timeLeft <= 0) return;
+    hp--;
+    healthInner.style.width = `${(hp / 30) * 100}%`;
+    hitSound.currentTime = 0;
+    hitSound.play();
+    spawnParticles(Math.random() * window.innerWidth, Math.random() * window.innerHeight, 6, ['red', 'orange', 'yellow']);
+    randomTeleport(escapeBtn);
+
+    if (hp <= 0) {
+      clearInterval(timerInterval);
+      body.classList.remove('bg-shake');
+      flash.remove();
+      winSound.play();
+      spawnMassiveParticles(10);
+      container.innerHTML = '<h1 class="glitch" style="color:white">You win! You didn’t leave him alone.</h1>';
+    }
+  };
+
+  const timerInterval = setInterval(() => {
+    timeLeft--;
+    timerDisplay.textContent = `Time Left: ${timeLeft}s`;
+    if (timeLeft <= 0 && hp > 0) {
+      clearInterval(timerInterval);
+      body.classList.remove('bg-shake');
+      flash.remove();
+      loseSound.play();
+      spawnMassiveParticles(6);
+      container.innerHTML = '<h1 class="glitch" style="color:white">You took too long... He escaped.</h1>';
+    }
+  }, 1000);
+}
+
+    button.addEventListener('click', nextStage);
+  </script>
+</body>
+</html>
