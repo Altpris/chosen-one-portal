@@ -13,7 +13,7 @@
       position: relative;
     }
 
-    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn, .wordfight-btn, .hangman-btn, .hack-btn, .clicker-btn, .memo-btn, .leave-btn {
+    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn, .wordfight-btn, .hangman-btn, .hack-btn, .clicker-btn, .memo-btn, .ai-btn, .leave-btn {
       display: block;
       width: fit-content;
       margin-bottom: 20px;
@@ -142,6 +142,20 @@
       color: black;
     }
 
+    .ai-btn {
+      background-color: limegreen;
+      color: black;
+      border: 3px solid white;
+      box-shadow: 0 0 15px lime;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .ai-btn:hover {
+      background-color: #bfff00;
+      box-shadow: 0 0 30px lime;
+      color: black;
+    }
+
     .leave-btn {
       background-color: #dc2626;
       color: white;
@@ -187,7 +201,7 @@
   <button class="wordfight-btn" data-site="Wordfight" onclick="openSite(event, 'Wordfight.html')">
     Word fight
   </button>
-  
+
   <button class="hangman-btn" data-site="Hangman" onclick="openSite(event, 'FINALLYMADEMYHANGERGAME.html')">
     Hang man vs ai
   </button>
@@ -212,27 +226,25 @@
     🚫 Leave the button alone game
   </button>
 
-  <div id="progress-counter">You tried 0/9 websites</div>
+  <button class="ai-btn" data-site="MazeAI" onclick="openSite(event, 'maze_ai_learning.html')">
+    🤖 Maze AI Challenge
+  </button>
+
+  <div id="progress-counter">You tried 0/10 websites</div>
 
   <script>
-    const totalSites = 9; // total number of unique sites
+    const totalSites = 10;
     const progressCounter = document.getElementById('progress-counter');
-
-    // Load visited sites from localStorage or start fresh
     let visitedSites = JSON.parse(localStorage.getItem('visitedSites')) || [];
 
-    // Update counter text
     function updateCounter() {
       progressCounter.textContent = `You tried ${visitedSites.length}/${totalSites} websites`;
     }
 
-    // Call on page load
     updateCounter();
 
-    // Open site and track progress
     function openSite(event, url) {
       const siteName = event.currentTarget.getAttribute('data-site');
-
       if (!visitedSites.includes(siteName)) {
         visitedSites.push(siteName);
         localStorage.setItem('visitedSites', JSON.stringify(visitedSites));
