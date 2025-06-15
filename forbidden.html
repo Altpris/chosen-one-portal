@@ -10,6 +10,7 @@
       font-family: Consolas, monospace;
       margin: 0;
       padding: 20px;
+      position: relative;
     }
 
     .forbidden-btn, .edits-btn, .calc-btn, .snake-btn, .wordfight-btn, .hangman-btn, .hack-btn, .clicker-btn, .memo-btn, .leave-btn {
@@ -154,46 +155,92 @@
       box-shadow: 0 0 30px #f87171;
       color: black;
     }
+
+    #progress-counter {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      padding: 8px 14px;
+      font-weight: bold;
+      border-radius: 12px;
+      font-size: 14px;
+      user-select: none;
+      pointer-events: none;
+      font-family: Consolas, monospace;
+      box-shadow: 0 0 10px white;
+      z-index: 1000;
+    }
   </style>
 </head>
 <body>
 
-  <button class="calc-btn" onclick="window.open('CalcPro.html', '_blank')">
+  <button class="calc-btn" data-site="CalcPro" onclick="openSite(event, 'CalcPro.html')">
     Just a normal calculator. nothing else.
   </button>
 
-  <button class="snake-btn" onclick="window.open('Snakegame.html', '_blank')">
+  <button class="snake-btn" data-site="Snakegame" onclick="openSite(event, 'Snakegame.html')">
     🐍 Play Snake Game *with ai against you or normally*
   </button>
 
-  <button class="wordfight-btn" onclick="window.open('Wordfight.html', '_blank')">
+  <button class="wordfight-btn" data-site="Wordfight" onclick="openSite(event, 'Wordfight.html')">
     Word fight
   </button>
   
-  <button class="hangman-btn" onclick="window.open('FINALLYMADEMYHANGERGAME.html', '_blank')">
+  <button class="hangman-btn" data-site="Hangman" onclick="openSite(event, 'FINALLYMADEMYHANGERGAME.html')">
     Hang man vs ai
   </button>
 
-  <button class="hack-btn" onclick="window.open('HackYourself.html', '_blank')">
+  <button class="hack-btn" data-site="HackYourself" onclick="openSite(event, 'HackYourself.html')">
     💀 Hack Yourself
   </button>
 
-  <button class="clicker-btn" onclick="window.open('clickerfigure.html', '_blank')">
+  <button class="clicker-btn" data-site="ClickerFigure" onclick="openSite(event, 'clickerfigure.html')">
     ⚔️ Clicker Figure: WPM vs AI
   </button>
 
-  <button class="calc-btn" onclick="window.open('real.html', '_blank')">
+  <button class="calc-btn" data-site="RealBallGame" onclick="openSite(event, 'real.html')">
     Nice ball game
   </button>
 
-  <button class="memo-btn" onclick="window.open('ohm.html', '_blank')">
+  <button class="memo-btn" data-site="MemoHelper" onclick="openSite(event, 'ohm.html')">
     🧠 Memo Helper 2000
   </button>
 
-  <!-- ✅ NEW 'Leave the button alone game' BUTTON -->
-  <button class="leave-btn" onclick="window.open('html.html', '_blank')">
+  <button class="leave-btn" data-site="LeaveTheButtonAlone" onclick="openSite(event, 'html.html')">
     🚫 Leave the button alone game
   </button>
+
+  <div id="progress-counter">You tried 0/9 websites</div>
+
+  <script>
+    const totalSites = 9; // total number of unique sites
+    const progressCounter = document.getElementById('progress-counter');
+
+    // Load visited sites from localStorage or start fresh
+    let visitedSites = JSON.parse(localStorage.getItem('visitedSites')) || [];
+
+    // Update counter text
+    function updateCounter() {
+      progressCounter.textContent = `You tried ${visitedSites.length}/${totalSites} websites`;
+    }
+
+    // Call on page load
+    updateCounter();
+
+    // Open site and track progress
+    function openSite(event, url) {
+      const siteName = event.currentTarget.getAttribute('data-site');
+
+      if (!visitedSites.includes(siteName)) {
+        visitedSites.push(siteName);
+        localStorage.setItem('visitedSites', JSON.stringify(visitedSites));
+        updateCounter();
+      }
+      window.open(url, '_blank');
+    }
+  </script>
 
 </body>
 </html>
