@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Maze AI Solver</title>
+  <style>
+    body {
+      background: #000;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+    }
+    h1 {
+      margin-top: 10px;
+    }
+    #maze {
+      display: grid;
+      grid-template-columns: repeat(30, 20px);
+      grid-template-rows: repeat(30, 20px);
+      margin: 10px;
+    }
+    .cell {
+      width: 20px;
+      height: 20px;
+      background: #333;
+    }
+    .wall {
+      background: black;
+    }
+    .path {
+      background: #888;
+    }
+    .start {
+      background: orange;
+    }
+    .exit {
+      background: gold;
+    }
+    .ai {
+      background: lime;
+    }
+    button {
+      margin-bottom: 10px;
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      background: #444;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    button:hover {
+      background: #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>Maze AI Solver</h1>
+  <button onclick="restartAI()">Challenge AI Again</button>
+  <div id="maze"></div>
+  <script>
+    const SIZE = 30;
+    const DIRS = [[-2, 0], [2, 0], [0, -2], [0, 2]];
+    const mazeDiv = document.getElementById('maze');
+    let cells = [];
+    let aiInterval = null;
+
+    function isValid(x, y, maze) {
+      return x >= 0 && y >= 0 && x < SIZE && y < SIZE && maze[y][x] === 'X';
+    }
+
+    function generateMaze(x, y, maze) {
+      maze[y][x] = ' ';
+      const dirs = [...DIRS].sort(() => Math.random() - 0.5);
+      for (const [dx, dy] of dirs) {
+        const nx = x + dx, ny = y + dy;
+        if (isValid(nx, ny, maze)) {
+          maze[y + dy / 2][x + dx / 2] = ' ';
+          generateMaze(nx, ny, maze);
+        }
+      }
+    }
+
+    function bfs(start, end, maze) {
+      const queue = [start];
+      const visited = Array.from({ length: SIZE }, () => Array(SIZE).fill(false));
+      const parent = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+      visited[start[1]][start[0]] = true;
+
+      while (queue.length) {
+        const [x, y] = queue.shift();
+        if (x === end[0] && y === end[1]) break;
+        for (const [dx, dy] of [[0, 1], [1, 0], [0, -1], [-1, 0]]) {
+          const nx = x + dx, ny = y + dy;
+          if (nx >= 0 && ny >= 0 && nx < SIZE && ny < SIZE &&
+              !visited[ny][nx] && maze[ny][nx] !== 'X') {
+            visited[ny][nx] = true;
+            parent[ny][nx] = [x, y];
+            queue.push([nx, ny]);
+          }
+        }
+      }
+
+      const path = [];
+      let [x, y] = end;
+      while (parent[y][x]) {
+        path.unshift([x, y]);
+        [x, y] = parent[y][x];
+      }
+      return path;
+    }
+
+    function renderMaze(maze, aiX, aiY) {
+      mazeDiv.innerHTML = '';
+      cells = [];
+      for (let y = 0; y < SIZE; y++) {
+        const row = [];
+        for (let x = 0; x < SIZE; x++) {
+          const cell = document.createElement('div');
+          cell.classList.add('cell');
+          if (maze[y][x] === 'X') cell.classList.add('wall');
+          else if (maze[y][x] === 'S') cell.classList.add('start');
+          else if (maze[y][x] === 'E') cell.classList.add('exit');
+          else cell.classList.add('path');
+          mazeDiv.appendChild(cell);
+          row.push(cell);
+        }
+        cells.push(row);
+      }
+      cells[aiY][aiX].classList.remove('path');
+      cells[aiY][aiX].classList.add('ai');
+    }
+
+    function moveAI(path, aiX, aiY) {
+      let index = 0;
+
+      function step() {
+        if (index >= path.length) return;
+        const [x, y] = path[index];
+        cells[aiY][aiX].classList.remove('ai');
+        cells[y][x].classList.add('ai');
+        aiX = x;
+        aiY = y;
+        index++;
+        aiInterval = setTimeout(step, 50);
+      }
+
+      step();
+    }
+
+    function generateAndSolveMaze() {
+      const maze = Array.from({ length: SIZE }, () => Array(SIZE).fill('X'));
+      generateMaze(1, 1, maze);
+      maze[1][1] = 'S';
+      maze[SIZE - 2][SIZE - 2] = 'E';
+
+      // Start AI at (1,1)
+      let aiX = 1;
+      let aiY = 1;
+
+      const start = [aiX, aiY];
+      const end = [SIZE - 2, SIZE - 2];
+      const path = bfs(start, end, maze);
+
+      renderMaze(maze, aiX, aiY);
+      moveAI(path, aiX, aiY);
+    }
+
+    function restartAI() {
+      // Cancel previous AI movement if it exists
+      if (aiInterval !== null) {
+        clearTimeout(aiInterval);
+        aiInterval = null;
+      }
+      generateAndSolveMaze();
+    }
+
+    // Start once
+    generateAndSolveMaze();
+  </script>
+</body>
+</html>
