@@ -13,7 +13,7 @@
       position: relative;
     }
 
-    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn, .wordfight-btn, .hangman-btn, .hack-btn, .clicker-btn, .memo-btn, .ai-btn, .leave-btn {
+    .forbidden-btn, .edits-btn, .calc-btn, .snake-btn, .wordfight-btn, .hangman-btn, .hack-btn, .clicker-btn, .memo-btn, .ai-btn, .leave-btn, .spline-btn {
       display: block;
       width: fit-content;
       margin-bottom: 20px;
@@ -170,6 +170,20 @@
       color: black;
     }
 
+    .spline-btn {
+      background-color: #0f172a;
+      color: #38bdf8;
+      border: 3px solid #38bdf8;
+      box-shadow: 0 0 15px #38bdf8;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .spline-btn:hover {
+      background-color: #38bdf8;
+      color: black;
+      box-shadow: 0 0 30px #7dd3fc;
+    }
+
     #progress-counter {
       position: fixed;
       bottom: 10px;
@@ -189,6 +203,10 @@
   </style>
 </head>
 <body>
+
+  <button class="spline-btn" data-site="MyCool3DAnimation" onclick="openSite(event, 'dsa.html')">
+    🎬 My cool 3D animation
+  </button>
 
   <button class="calc-btn" data-site="CalcPro" onclick="openSite(event, 'CalcPro.html')">
     Just a normal calculator. nothing else.
@@ -230,10 +248,10 @@
     🤖 Maze AI Challenge
   </button>
 
-  <div id="progress-counter">You tried 0/10 websites</div>
+  <div id="progress-counter">You tried 0/11 websites</div>
 
   <script>
-    const totalSites = 10;
+    const totalSites = 11; // ✅ updated
     const progressCounter = document.getElementById('progress-counter');
     let visitedSites = JSON.parse(localStorage.getItem('visitedSites')) || [];
 
