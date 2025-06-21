@@ -204,6 +204,10 @@
 </head>
 <body>
 
+  <button class="spline-btn" data-site="GoatedAnimation" onclick="openSite(event, 'cube.html')">
+    💠 Goated Animation
+  </button>
+
   <button class="spline-btn" data-site="MyCool3DAnimation" onclick="openSite(event, 'dsa.html')">
     🎬 My cool 3D animation
   </button>
@@ -220,7 +224,7 @@
     Word fight
   </button>
 
-  <button class="hangman-btn" data-site="Hangman" onclick="openSite(event, 'FINALLYMADEMYHANGERGAME.html')">
+  <button class="hangman-btn" data-site="FINALLYMADEMYHANGERGAME" onclick="openSite(event, 'FINALLYMADEMYHANGERGAME.html')">
     Hang man vs ai
   </button>
 
@@ -248,10 +252,10 @@
     🤖 Maze AI Challenge
   </button>
 
-  <div id="progress-counter">You tried 0/11 websites</div>
+  <div id="progress-counter">You tried 0/12 websites</div>
 
   <script>
-    const totalSites = 11; // ✅ updated
+    const totalSites = 12; // ✅ updated
     const progressCounter = document.getElementById('progress-counter');
     let visitedSites = JSON.parse(localStorage.getItem('visitedSites')) || [];
 
